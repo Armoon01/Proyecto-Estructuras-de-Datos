@@ -31,17 +31,7 @@ class Carrito:
             print("Productos en el carrito:")
             for producto in self.productos:
                 i=1
-                print(f"{i}. Nombre: {producto.get_nombre()}, Precio: {producto.get_precio()}, Descripción: {producto.get_descripcion()}, ID: {producto.get_id()}")
+                print(f"{i}. Nombre: {producto.getNombre()}, Precio: {producto.getPrecio()}, Descripción: {producto.getDescripcion()}, ID: {producto.getIdProducto()}")
                 i += 1
 
-producto1 = Producto.Producto("Dell XPS 13", 1500, "Laptop", 1, 10)
-producto2 = Producto.Producto("iPhone 13", 800, "Smartphone", 2, 5)
-carrito = Carrito(1)
-carrito.agregar_producto(producto1)
-carrito.agregar_producto(producto2)
-carrito.mostrar_carrito()
-carrito.eliminar_producto(producto1)
-carrito.mostrar_carrito()
-        
-    
         
