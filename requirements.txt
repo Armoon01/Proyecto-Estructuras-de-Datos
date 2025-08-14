@@ -1,0 +1,4 @@
+tk
+
+
+#comando en la terminal para instalar dependencias: pip install -r requirements.txt
