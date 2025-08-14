@@ -1,23 +1,23 @@
 import Cliente
-import producto
-import inventario
+import Producto
+#import inventario
 
 class Carrito:
-    def __init__(self, Id):
+    def __init__(self, id):
         self.id = id
         self.productos = set()
         
     def agregar_producto(self, producto):
-        if (producto):
-            self.productos.push(producto)
-            print(f"Producto {producto.get_nombre()} agregado al carrito.")
-            
+        if producto:
+            self.productos.add(producto)
+            print(f"Producto {producto.getNombre()} agregado al carrito.")
+
     def eliminar_producto(self, producto):
-        id_producto = producto.get_id()
-        
-        for prod in self.productos:
-            if prod.get_id() == id_producto:
+        id_producto = producto.getIdProducto()
+        for prod in list(self.productos):
+            if prod.getIdProducto() == id_producto:
                 self.productos.remove(prod)
+                print(f"Producto {prod.getNombre()} eliminado del carrito.")
                 return True
         print("Producto no encontrado en el carrito.")
         return False
@@ -33,13 +33,15 @@ class Carrito:
                 i=1
                 print(f"{i}. Nombre: {producto.get_nombre()}, Precio: {producto.get_precio()}, Descripción: {producto.get_descripcion()}, ID: {producto.get_id()}")
                 i += 1
-    
-producto1 = producto.Producto("Laptop", 1500, "Dell XPS 13", 1, 10)
-producto2 = producto.Producto("Smartphone", 800, "iPhone 13", 2, 5) 
+
+producto1 = Producto.Producto("Dell XPS 13", 1500, "Laptop", 1, 10)
+producto2 = Producto.Producto("iPhone 13", 800, "Smartphone", 2, 5)
 carrito = Carrito(1)
 carrito.agregar_producto(producto1)
 carrito.agregar_producto(producto2)
+carrito.mostrar_carrito()
 carrito.eliminar_producto(producto1)
+carrito.mostrar_carrito()
         
     
         

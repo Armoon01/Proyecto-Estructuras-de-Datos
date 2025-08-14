@@ -1,4 +1,3 @@
-import exception
 
 class Producto:
     
