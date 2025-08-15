@@ -1,39 +1,54 @@
-class Nodo:
+class NodoDoble:
     def __init__(self, dato):
         self.dato = dato
         self.siguiente = None
+        self.anterior = None
 
-class Lista:
+class ListaDoble:
     def __init__(self):
         self.cabeza = None
+        self.cola = None
         self.tamaño = 0
     
-    def agregar(self, elemento):
-        """Agregar elemento al final de la lista"""
-        nuevo_nodo = Nodo(elemento)
+    def agregar_inicio(self, elemento):
+        """Agregar elemento al inicio de la lista"""
+        nuevo_nodo = NodoDoble(elemento)
         if self.cabeza is None:
             self.cabeza = nuevo_nodo
+            self.cola = nuevo_nodo
         else:
-            actual = self.cabeza
-            while actual.siguiente:
-                actual = actual.siguiente
-            actual.siguiente = nuevo_nodo
+            nuevo_nodo.siguiente = self.cabeza
+            self.cabeza.anterior = nuevo_nodo
+            self.cabeza = nuevo_nodo
+        self.tamaño += 1
+    
+    def agregar_final(self, elemento):
+        """Agregar elemento al final de la lista"""
+        nuevo_nodo = NodoDoble(elemento)
+        if self.cola is None:
+            self.cabeza = nuevo_nodo
+            self.cola = nuevo_nodo
+        else:
+            self.cola.siguiente = nuevo_nodo
+            nuevo_nodo.anterior = self.cola
+            self.cola = nuevo_nodo
         self.tamaño += 1
     
     def eliminar(self, elemento):
         """Eliminar primera ocurrencia del elemento"""
-        if self.cabeza is None:
-            return False
-        
-        if self.cabeza.dato == elemento:
-            self.cabeza = self.cabeza.siguiente
-            self.tamaño -= 1
-            return True
-        
         actual = self.cabeza
-        while actual.siguiente:
-            if actual.siguiente.dato == elemento:
-                actual.siguiente = actual.siguiente.siguiente
+        while actual:
+            if actual.dato == elemento:
+                if actual.anterior:
+                    actual.anterior.siguiente = actual.siguiente
+                else:
+                    self.cabeza = actual.siguiente
+                
+                if actual.siguiente:
+                    actual.siguiente.anterior = actual.anterior
+                else:
+                    self.cola = actual.anterior
+                
                 self.tamaño -= 1
                 return True
             actual = actual.siguiente
@@ -68,4 +83,4 @@ class Lista:
         return elementos
     
     def __str__(self):
-        return f"Lista: {self.obtener_elementos()}"
+        return f"ListaDoble: {self.obtener_elementos()}"

@@ -1,0 +1,5 @@
+email,password,nombre,fecha_registro,ultimo_login
+juan@email.com,nueva123,Juan Pérez,2025-08-14 10:32:13,2025-08-14 10:37:03
+maria@test.com,pass123,María García,2025-08-14 10:38:28,2025-08-14 10:38:28
+carlos@email.com,carlos456,Carlos López,2025-08-14 10:38:28,2025-08-14 10:38:28
+ana@correo.com,ana789,Ana Martínez,2025-08-14 10:38:28,
