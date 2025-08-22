@@ -29,4 +29,11 @@ class Carrito:
             return self.productos
         return None
 
+    def vaciar_carrito(self):
+        """
+        Vacía el carrito eliminando todos los productos.
+        """
+        self.productos.limpiar()
+        return True
+
         
