@@ -79,11 +79,6 @@ class Cliente:
             'activo': self.activo
         }
     
-    def __str__(self):
-        """Representación en cadena del cliente."""
-        estado = "✅" if self.activo else "❌"
-        return f"{estado} {self.nombre} ({self.email})"
-    
     def __repr__(self):
         """Representación técnica del cliente."""
         return f"Cliente(id='{self.id_cliente}', nombre='{self.nombre}', email='{self.email}')"
