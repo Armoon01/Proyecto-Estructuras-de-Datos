@@ -34,7 +34,14 @@ class Producto:
     def getIdProducto(self):
         return self.id_producto
     
-
-
+    def __str__(self):
+        return f"{self.nombre} - ${self.precio:.2f}"
     
-
+    def __repr__(self):
+        return f"Producto(id_producto={self.id_producto}, nombre='{self.nombre}', precio={self.precio})"
+    
+    def __eq__(self, other):
+        
+        if isinstance(other, Producto):
+            return self.id_producto == other.id_producto
+        return False

@@ -6,7 +6,8 @@ from Producto import Producto
 class Cliente:
     """Clase para representar clientes del sistema."""
     
-    def __init__(self, id_cliente, nombre, email, telefono="", carrito):
+    #def __init__(self, id_cliente, nombre, email, telefono="", carrito):
+    def __init__(self, id_cliente, nombre, email, carrito, telefono=""):
         """
         Inicializa un cliente.
         
@@ -16,6 +17,7 @@ class Cliente:
             email (str): Email del cliente
             telefono (str): Teléfono del cliente (opcional)
             carrito (Carrito): Carrito asociado al cliente
+            
         """
         # Validaciones básicas
         if not id_cliente:
