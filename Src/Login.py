@@ -161,39 +161,27 @@ class SistemaLogin:
         except Exception as e:
             print(f"Error al sincronizar con clientes.csv: {e}")
 
-    def registrar_usuario(self, id_usuario, nombre, email, password, telefono="", rol="cliente"):
+    def registrar_usuario(self, nombre, email, password, telefono="", rol="cliente"):
         """
-        Registra un nuevo usuario en el sistema.
-        
-        Args:
-            id_usuario (str): ID único del usuario
-            nombre (str): Nombre completo
-            email (str): Email del usuario
-            password (str): Contraseña en texto plano
-            telefono (str): Teléfono (opcional)
-            rol (str): Rol del usuario (cliente/administrador)
-            
-        Returns:
-            tuple: (bool, str) - (éxito, mensaje)
+        Registra un nuevo usuario en el sistema. El id_usuario se genera automáticamente.
         """
-        # Validaciones
-        if not id_usuario or id_usuario in self.usuarios_db:
-            return False, "ID de usuario ya existe o está vacío"
-        
         if not nombre:
             return False, "El nombre es requerido"
-        
         if not email or "@" not in email:
             return False, "Email inválido"
-        
         if len(password) < 6:
             return False, "La contraseña debe tener al menos 6 caracteres"
-        
         # Verificar que el email no esté en uso
         for usuario_data in self.usuarios_db.values():
             if usuario_data['email'] == email:
                 return False, "Email ya registrado"
-        
+        # Generar id_usuario único basado en email
+        id_usuario = email.split('@')[0]
+        contador = 1
+        id_original = id_usuario
+        while id_usuario in self.usuarios_db:
+            id_usuario = f"{id_original}{contador}"
+            contador += 1
         # Crear nuevo usuario
         nuevo_usuario = {
             'id_usuario': id_usuario,
@@ -207,73 +195,45 @@ class SistemaLogin:
             'intentos_login': 0,
             'ultimo_login': None
         }
-        
         self.usuarios_db[id_usuario] = nuevo_usuario
         self.guardar_usuarios()
-        
-        # Sincronizar con clientes.csv si es un cliente
         if rol == 'cliente':
             self.sincronizar_con_clientes_csv()
-        
         return True, "Usuario registrado exitosamente"
     
-    def autenticar(self, id_usuario, password):
+    def autenticar(self, email, password):
         """
-        Autentica un usuario con ID y contraseña.
-        
-        Args:
-            id_usuario (str): ID del usuario
-            password (str): Contraseña en texto plano
-            
-        Returns:
-            tuple: (bool, str, dict) - (éxito, mensaje, datos_usuario)
+        Autentica un usuario con email y contraseña.
         """
-        if id_usuario not in self.usuarios_db:
+        usuario_data = None
+        for user in self.usuarios_db.values():
+            if user['email'] == email:
+                usuario_data = user
+                break
+        if not usuario_data:
             return False, "Usuario no encontrado", None
-        
-        usuario_data = self.usuarios_db[id_usuario]
-        
-        # Verificar si la cuenta está activa
         if not usuario_data.get('activo', True):
             return False, "Cuenta desactivada", None
-        
-        # Verificar intentos de login (bloqueo por seguridad)
         if usuario_data.get('intentos_login', 0) >= 5:
             return False, "Cuenta bloqueada por múltiples intentos fallidos", None
-        
-        # Verificar contraseña
         password_hash = self.hash_password(password)
         if usuario_data['password_hash'] != password_hash:
-            # Incrementar intentos fallidos
             usuario_data['intentos_login'] = usuario_data.get('intentos_login', 0) + 1
             self.guardar_usuarios()
             return False, "Contraseña incorrecta", None
-        
-        # Autenticación exitosa
-        usuario_data['intentos_login'] = 0  # Resetear intentos
+        usuario_data['intentos_login'] = 0
         usuario_data['ultimo_login'] = datetime.now().isoformat()
         self.guardar_usuarios()
-        
         return True, "Autenticación exitosa", usuario_data
     
-    def iniciar_sesion(self, id_usuario, password):
+    def iniciar_sesion(self, email, password):
         """
-        Inicia sesión y crea una sesión activa.
-        
-        Args:
-            id_usuario (str): ID del usuario
-            password (str): Contraseña
-            
-        Returns:
-            tuple: (bool, str, Cliente|None) - (éxito, mensaje, objeto_cliente)
+        Inicia sesión y crea una sesión activa usando el correo.
         """
-        exito, mensaje, usuario_data = self.autenticar(id_usuario, password)
-        
+        exito, mensaje, usuario_data = self.autenticar(email, password)
         if not exito:
             return False, mensaje, None
-        
-        # Crear objeto Cliente para el usuario autenticado
-        carrito_usuario = Carrito(f"carrito_{id_usuario}")
+        carrito_usuario = Carrito(f"carrito_{usuario_data['id_usuario']}")
         cliente = Cliente(
             id_cliente=usuario_data['id_usuario'],
             nombre=usuario_data['nombre'],
@@ -281,10 +241,7 @@ class SistemaLogin:
             carrito=carrito_usuario,
             telefono=usuario_data.get('telefono', '')
         )
-        
-        # Guardar usuario actual
         self.usuario_actual = cliente
-        
         return True, f"Bienvenido, {cliente.nombre}!", cliente
     
     def cerrar_sesion(self):

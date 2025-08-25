@@ -573,6 +573,9 @@ Stock disponible: {producto.stock}
         # Agregar a la cola de pagos
         self.cola_pagos.enqueue(pago)
         
+        # Guardar pago en CSV
+        self.guardar_pago_csv(pago)
+        
         # Actualizar visualizaciones
         self.actualizar_visualizaciones()
         
@@ -656,6 +659,41 @@ Stock disponible: {producto.stock}
         except Exception as e:
             messagebox.showerror("Error", f"Error al guardar la orden: {str(e)}")
     
+    def guardar_pago_csv(self, pago):
+        """Guardar pago en archivo CSV"""
+        try:
+            # Crear directorio Data si no existe
+            data_dir = os.path.join(os.path.dirname(current_dir), 'Data')
+            os.makedirs(data_dir, exist_ok=True)
+            
+            data_path = os.path.join(data_dir, 'pagos.csv')
+            
+            # Verificar si el archivo existe para escribir header
+            file_exists = os.path.exists(data_path)
+            
+            with open(data_path, 'a', newline='', encoding='utf-8') as file:
+                fieldnames = ['id_pago', 'fecha', 'cliente', 'email', 'monto', 'metodo', 'numero_tarjeta', 'estado']
+                writer = csv.DictWriter(file, fieldnames=fieldnames)
+                
+                # Escribir header si el archivo es nuevo
+                if not file_exists:
+                    writer.writeheader()
+                
+                # Escribir datos del pago
+                writer.writerow({
+                    'id_pago': pago.id_pago,
+                    'fecha': pago.fecha.strftime('%Y-%m-%d %H:%M:%S'),
+                    'cliente': self.entry_nombre.get(),
+                    'email': self.entry_email.get(),
+                    'monto': pago.monto,
+                    'metodo': pago.metodo,
+                    'numero_tarjeta': self.entry_tarjeta.get()[-4:] if self.entry_tarjeta.get() else 'N/A',  # Solo últimos 4 dígitos
+                    'estado': 'Completado'
+                })
+                
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al guardar el pago: {str(e)}")
+    
     def limpiar_formulario(self):
         """Limpiar formulario de checkout"""
         self.entry_nombre.delete(0, tk.END)
@@ -733,6 +771,9 @@ Stock disponible: {producto.stock}
                 fecha=datetime.now()
             )
             self.cola_pagos.enqueue(pago)
+            
+            # Guardar pago en CSV
+            self.guardar_pago_csv(pago)
             
             # Actualizar visualizaciones
             self.actualizar_carrito()

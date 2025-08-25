@@ -1,5 +1,5 @@
 """
-Interfaz gráfica para el sistema de login.
+Interfaz gráfica para el sistema de login con diseño moderno.
 """
 import tkinter as tk
 from tkinter import ttk, messagebox
@@ -70,7 +70,7 @@ class InterfazLogin:
         info_frame = ttk.Frame(main_frame)
         info_frame.pack(fill=tk.X)
         
-        ttk.Label(info_frame, text="Usuario por defecto: admin / Contraseña: admin123", 
+        ttk.Label(info_frame, text="Usuario por defecto: admin@universidad.edu / Contraseña: admin123", 
                  font=('Arial', 9), foreground='gray').pack()
         
         # Botón de salir
@@ -82,7 +82,7 @@ class InterfazLogin:
         self.notebook.add(login_frame, text="Iniciar Sesión")
         
         # Campos de login
-        ttk.Label(login_frame, text="ID de Usuario:", font=('Arial', 10, 'bold')).pack(anchor=tk.W, pady=(0, 5))
+        ttk.Label(login_frame, text="Email:", font=('Arial', 10, 'bold')).pack(anchor=tk.W, pady=(0, 5))
         self.entry_usuario = ttk.Entry(login_frame, width=30, font=('Arial', 11))
         self.entry_usuario.pack(pady=(0, 15))
         self.entry_usuario.focus()
@@ -99,9 +99,9 @@ class InterfazLogin:
         info_login = ttk.LabelFrame(login_frame, text="Información", padding="10")
         info_login.pack(fill=tk.X, pady=(10, 0))
         
-        ttk.Label(info_login, text="• Use sus credenciales universitarias").pack(anchor=tk.W)
+        ttk.Label(info_login, text="• Use su email universitario").pack(anchor=tk.W)
         ttk.Label(info_login, text="• Si no tiene cuenta, regístrese en la pestaña siguiente").pack(anchor=tk.W)
-        ttk.Label(info_login, text="• Para pruebas use: admin / admin123").pack(anchor=tk.W)
+        ttk.Label(info_login, text="• Para pruebas use: admin@universidad.edu / admin123").pack(anchor=tk.W)
         
         # Eventos de teclado
         self.entry_usuario.bind('<Return>', lambda e: self.entry_password.focus())
@@ -117,10 +117,6 @@ class InterfazLogin:
         contenido_frame.pack(expand=True, fill='both')
         
         # Campos de registro con espaciado reducido
-        ttk.Label(contenido_frame, text="ID de Usuario:", font=('Arial', 10, 'bold')).pack(anchor=tk.W, pady=(0, 3))
-        self.entry_reg_usuario = ttk.Entry(contenido_frame, width=30)
-        self.entry_reg_usuario.pack(pady=(0, 6))
-        
         ttk.Label(contenido_frame, text="Nombre Completo:", font=('Arial', 10, 'bold')).pack(anchor=tk.W, pady=(0, 3))
         self.entry_reg_nombre = ttk.Entry(contenido_frame, width=30)
         self.entry_reg_nombre.pack(pady=(0, 6))
@@ -148,11 +144,10 @@ class InterfazLogin:
         btn_registro.pack(pady=(5, 10))
         
         # Información compacta
-        info_text = "• Mínimo 6 caracteres en la contraseña • Email válido requerido"
+        info_text = "• Mínimo 6 caracteres en la contraseña • Email válido requerido • ID se asigna automáticamente"
         ttk.Label(contenido_frame, text=info_text, font=('Arial', 8), foreground='gray').pack(pady=(0, 5))
         
         # Eventos de teclado para navegación fluida
-        self.entry_reg_usuario.bind('<Return>', lambda e: self.entry_reg_nombre.focus())
         self.entry_reg_nombre.bind('<Return>', lambda e: self.entry_reg_email.focus())
         self.entry_reg_email.bind('<Return>', lambda e: self.entry_reg_telefono.focus())
         self.entry_reg_telefono.bind('<Return>', lambda e: self.entry_reg_password.focus())
@@ -161,15 +156,15 @@ class InterfazLogin:
     
     def procesar_login(self):
         """Procesa el intento de login."""
-        usuario = self.entry_usuario.get().strip()
+        email = self.entry_usuario.get().strip()
         password = self.entry_password.get()
         
-        if not usuario or not password:
+        if not email or not password:
             messagebox.showerror("Error", "Por favor complete todos los campos")
             return
         
         # Intentar autenticación
-        exito, mensaje, cliente = self.sistema_login.iniciar_sesion(usuario, password)
+        exito, mensaje, cliente = self.sistema_login.iniciar_sesion(email, password)
         
         if exito:
             self.cliente_autenticado = cliente
@@ -187,7 +182,6 @@ class InterfazLogin:
     
     def procesar_registro(self):
         """Procesa el registro de un nuevo usuario."""
-        usuario = self.entry_reg_usuario.get().strip()
         nombre = self.entry_reg_nombre.get().strip()
         email = self.entry_reg_email.get().strip()
         telefono = self.entry_reg_telefono.get().strip()
@@ -195,7 +189,7 @@ class InterfazLogin:
         confirm = self.entry_reg_confirm.get()
         
         # Validaciones
-        if not all([usuario, nombre, email, password, confirm]):
+        if not all([nombre, email, password, confirm]):
             messagebox.showerror("Error", "Por favor complete todos los campos obligatorios")
             return
         
@@ -205,7 +199,7 @@ class InterfazLogin:
         
         # Intentar registro
         exito, mensaje = self.sistema_login.registrar_usuario(
-            usuario, nombre, email, password, telefono
+            nombre, email, password, telefono
         )
         
         if exito:
@@ -215,14 +209,13 @@ class InterfazLogin:
             # Cambiar a pestaña de login
             self.notebook.select(0)
             self.entry_usuario.delete(0, tk.END)
-            self.entry_usuario.insert(0, usuario)
+            self.entry_usuario.insert(0, email)
             self.entry_password.focus()
         else:
             messagebox.showerror("Error de Registro", mensaje)
     
     def limpiar_campos_registro(self):
         """Limpia todos los campos de registro."""
-        self.entry_reg_usuario.delete(0, tk.END)
         self.entry_reg_nombre.delete(0, tk.END)
         self.entry_reg_email.delete(0, tk.END)
         self.entry_reg_telefono.delete(0, tk.END)
