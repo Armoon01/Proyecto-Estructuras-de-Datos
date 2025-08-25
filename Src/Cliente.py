@@ -3,6 +3,7 @@ Clase Cliente simplificada para el sistema de e-commerce universitario.
 """
 from Carrito import Carrito
 from Producto import Producto
+
 class Cliente:
     """Clase para representar clientes del sistema."""
     
@@ -33,6 +34,96 @@ class Cliente:
         self.telefono = telefono
         self.activo = True
         self.carrito = carrito
+        # Nueva funcionalidad: Lista de órdenes del cliente
+        self.ordenes = []  # Lista para almacenar el historial de órdenes
+    
+    def agregar_orden(self, orden):
+        """
+        Agrega una orden al historial del cliente.
+        
+        Args:
+            orden (Orden): Orden a agregar al historial
+            
+        Returns:
+            bool: True si se agregó correctamente
+        """
+        try:
+            if orden and hasattr(orden, 'id'):
+                self.ordenes.append(orden)
+                return True
+            return False
+        except Exception:
+            return False
+    
+    def obtener_ordenes(self):
+        """
+        Obtiene todas las órdenes del cliente.
+        
+        Returns:
+            list: Lista de órdenes del cliente
+        """
+        return self.ordenes.copy()  # Retorna una copia para evitar modificaciones externas
+    
+    def obtener_orden_por_id(self, id_orden):
+        """
+        Busca una orden específica por su ID.
+        
+        Args:
+            id_orden: ID de la orden a buscar
+            
+        Returns:
+            Orden: La orden encontrada o None si no existe
+        """
+        for orden in self.ordenes:
+            if hasattr(orden, 'id') and orden.id == id_orden:
+                return orden
+        return None
+    
+    def obtener_ordenes_activas(self):
+        """
+        Obtiene las órdenes que están en proceso (no entregadas).
+        
+        Returns:
+            list: Lista de órdenes activas
+        """
+        ordenes_activas = []
+        for orden in self.ordenes:
+            if hasattr(orden, 'estado') and orden.estado in ['Pendiente', 'Procesando', 'Enviado']:
+                ordenes_activas.append(orden)
+        return ordenes_activas
+    
+    def obtener_total_gastado(self):
+        """
+        Calcula el total gastado por el cliente en todas sus órdenes.
+        
+        Returns:
+            float: Total gastado por el cliente
+        """
+        total_gastado = 0.0
+        for orden in self.ordenes:
+            if hasattr(orden, 'total'):
+                total_gastado += orden.total
+        return total_gastado
+    
+    def contar_ordenes(self):
+        """
+        Cuenta el número total de órdenes del cliente.
+        
+        Returns:
+            int: Número de órdenes
+        """
+        return len(self.ordenes)
+    
+    def obtener_ultima_orden(self):
+        """
+        Obtiene la orden más reciente del cliente.
+        
+        Returns:
+            Orden: La orden más reciente o None si no hay órdenes
+        """
+        if self.ordenes:
+            return self.ordenes[-1]  # La última orden agregada
+        return None
     
     def actualizar_info(self, nombre=None, email=None, telefono=None):
         """
@@ -204,12 +295,15 @@ class Cliente:
             'nombre': self.nombre,
             'email': self.email,
             'telefono': self.telefono,
-            'activo': self.activo
+            'activo': self.activo,
+            'total_ordenes': self.contar_ordenes(),
+            'total_gastado': self.obtener_total_gastado(),
+            'ordenes_activas': len(self.obtener_ordenes_activas())
         }
     
     def __repr__(self):
         """Representación técnica del cliente."""
-        return f"Cliente(id='{self.id_cliente}', nombre='{self.nombre}', email='{self.email}')"
+        return f"Cliente(id='{self.id_cliente}', nombre='{self.nombre}', email='{self.email}', ordenes={self.contar_ordenes()})"
     
     def __eq__(self, otro):
         """Compara clientes por ID."""

@@ -8,7 +8,6 @@ from estructuras.Lista import Lista
 #clase para representar un item en el carrito
 class ItemCarrito:
     
-    
     def __init__(self, producto, cantidad):
         self.producto = producto
         self.cantidad = cantidad

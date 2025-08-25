@@ -1,0 +1,10 @@
+id_usuario,nombre,email,password_hash,rol,fecha_creacion,activo,telefono,intentos_login,ultimo_login
+admin,Administrador,admin@universidad.edu,240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9,administrador,2025-08-25T09:23:27.245360,True,000-000-0000,0,2025-08-25T09:37:02.913197
+juan,Juan Pérez,juan@email.com,nueva123,cliente,2025-08-14 10:32:13,True,,0,2025-08-14 10:37:03
+maria,María García,maria@test.com,pass123,cliente,2025-08-14 10:38:28,True,,0,2025-08-14 10:38:28
+carlos,Carlos López,carlos@email.com,carlos456,cliente,2025-08-14 10:38:28,True,,0,2025-08-14 10:38:28
+ana,Ana Martínez,ana@correo.com,ana789,cliente,2025-08-14 10:38:28,True,,0,
+test_user,Usuario Test,test@universidad.edu,ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f,cliente,2025-08-25T09:23:27.262679,True,555-9999,0,2025-08-25T09:23:27.280901
+estudiante2025,María José Rodríguez,maria.rodriguez@universidad.edu,2e63a1090735f47213fea3b974418e3e42437325f313b3d3d2f6238cc22298f9,cliente,2025-08-25T09:32:43.774315,True,555-1234,0,2025-08-25T09:32:43.792524
+user_simple_1756136153,Usuario Simplificado,simple_1756136153@test.com,dc16faf6b852e1c14e363d3ff1da32b7f755edb9d0b2dfa0bf9dbb154dfcd4e5,cliente,2025-08-25T09:35:53.337047,True,555-SIMPLE,0,2025-08-25T09:35:53.340334
+user_simple_1756136222,Usuario Simplificado,simple_1756136222@test.com,dc16faf6b852e1c14e363d3ff1da32b7f755edb9d0b2dfa0bf9dbb154dfcd4e5,cliente,2025-08-25T09:37:02.914674,True,555-SIMPLE,0,2025-08-25T09:37:02.919814

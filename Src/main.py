@@ -5,7 +5,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import sys
 
@@ -17,20 +17,30 @@ from Carrito import Carrito
 from Producto import Producto
 from Pago import Pago
 from Orden import Orden
-from estructuras.Cola import ColaPagos
-from estructuras.Pila import PilaOrdenes
+from estructuras.Cola import Cola
+from estructuras.Pila import Pila
+from Login import SistemaLogin
+from InterfazLogin import mostrar_login
 
 class SistemaCompras:
-    def __init__(self, root):
+    def __init__(self, root, cliente_autenticado=None, sistema_login=None):
         self.root = root
         self.root.title("Sistema de Compras - Universidad")
         self.root.geometry("1200x800")
         
+        # Sistema de autenticación
+        self.sistema_login = sistema_login
+        self.cliente_autenticado = cliente_autenticado
+        
         # Inicializar estructuras de datos
-        self.carrito = Carrito("carrito_principal")
+        if cliente_autenticado:
+            self.carrito = cliente_autenticado.carrito  # Usar carrito del cliente autenticado
+        else:
+            self.carrito = Carrito("carrito_invitado")  # Carrito temporal para invitados
+            
         self.lista_productos = []
-        self.pila_ordenes = PilaOrdenes()
-        self.cola_pagos = ColaPagos()
+        self.pila_ordenes = Pila()
+        self.cola_pagos = Cola()
         
         # Cargar productos desde CSV
         self.cargar_productos()
@@ -38,6 +48,9 @@ class SistemaCompras:
         # Crear interfaz
         self.crear_interfaz()
         
+        # Configurar cierre de aplicación
+        self.root.protocol("WM_DELETE_WINDOW", self.cerrar_aplicacion)
+    
     def cargar_productos(self):
         """Cargar productos desde archivo CSV"""
         try:
@@ -101,8 +114,15 @@ class SistemaCompras:
         main_frame.columnconfigure(1, weight=1)
         main_frame.columnconfigure(3, weight=1)
         
-        # Título
-        titulo = ttk.Label(main_frame, text="Sistema de Compras", font=('Arial', 16, 'bold'))
+        # Título con información del usuario
+        if self.cliente_autenticado:
+            usuario_info = f"Sistema de Compras - Bienvenido, {self.cliente_autenticado.nombre}"
+            if self.sistema_login and self.sistema_login.es_administrador():
+                usuario_info += " (Administrador)"
+        else:
+            usuario_info = "Sistema de Compras - Modo Invitado"
+            
+        titulo = ttk.Label(main_frame, text=usuario_info, font=('Arial', 16, 'bold'))
         titulo.grid(row=0, column=0, columnspan=4, pady=(0, 20))
         
         # Panel izquierdo - Productos
@@ -249,10 +269,105 @@ class SistemaCompras:
         btn_frame = ttk.Frame(frame)
         btn_frame.grid(row=2, column=0, columnspan=2, pady=(10, 0))
         
-        ttk.Button(btn_frame, text="Procesar Pago", command=self.procesar_pago).pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Button(btn_frame, text="Generar Orden", command=self.generar_orden).pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Button(btn_frame, text="Limpiar Formulario", command=self.limpiar_formulario).pack(side=tk.LEFT)
+        ttk.Button(btn_frame, text="Procesar Pago", command=self.procesar_pago).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(btn_frame, text="Generar Orden", command=self.generar_orden).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(btn_frame, text="Checkout Completo", command=self.procesar_checkout_completo).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(btn_frame, text="Ver Historial", command=self.mostrar_historial_cliente).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(btn_frame, text="Limpiar Formulario", command=self.limpiar_formulario).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(btn_frame, text="Cerrar Sesión", command=self.cerrar_sesion).pack(side=tk.LEFT)
+        
+        # Si hay cliente autenticado, rellenar campos
+        if self.cliente_autenticado:
+            self.rellenar_campos_cliente()
     
+    def mostrar_historial_cliente(self):
+        """Mostrar historial de órdenes del cliente actual"""
+        if not self.entry_nombre.get() or not self.entry_email.get():
+            messagebox.showwarning("Advertencia", "Por favor complete los campos del cliente")
+            return
+        
+        try:
+            from Cliente import Cliente
+            
+            # Crear un cliente temporal para mostrar historial
+            # En una aplicación real, buscaríamos el cliente en una base de datos
+            cliente_temp = Cliente(
+                id_cliente="temp",
+                nombre=self.entry_nombre.get(),
+                email=self.entry_email.get(),
+                carrito=self.carrito,
+                telefono=""
+            )
+            
+            # Simular órdenes del historial (en una app real, se cargarían de la BD)
+            # Por ahora, mostraremos las órdenes de la pila actual
+            ordenes_historial = self.pila_ordenes.obtener_elementos()
+            
+            # Crear ventana de historial
+            ventana_historial = tk.Toplevel(self.root)
+            ventana_historial.title(f"Historial de Órdenes - {cliente_temp.nombre}")
+            ventana_historial.geometry("800x600")
+            ventana_historial.transient(self.root)
+            ventana_historial.grab_set()
+            
+            # Información del cliente
+            info_frame = ttk.LabelFrame(ventana_historial, text="Información del Cliente", padding="10")
+            info_frame.pack(fill=tk.X, padx=10, pady=5)
+            
+            ttk.Label(info_frame, text=f"Nombre: {cliente_temp.nombre}").pack(anchor=tk.W)
+            ttk.Label(info_frame, text=f"Email: {cliente_temp.email}").pack(anchor=tk.W)
+            ttk.Label(info_frame, text=f"Total de órdenes: {len(ordenes_historial)}").pack(anchor=tk.W)
+            
+            # Lista de órdenes
+            ordenes_frame = ttk.LabelFrame(ventana_historial, text="Historial de Órdenes", padding="10")
+            ordenes_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+            
+            # Treeview para órdenes
+            columns = ('Orden', 'Fecha', 'Estado', 'Total', 'Items')
+            tree_ordenes = ttk.Treeview(ordenes_frame, columns=columns, show='headings', height=15)
+            
+            for col in columns:
+                tree_ordenes.heading(col, text=col)
+                tree_ordenes.column(col, width=120)
+            
+            tree_ordenes.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
+            
+            # Scrollbar
+            scrollbar_ordenes = ttk.Scrollbar(ordenes_frame, orient=tk.VERTICAL, command=tree_ordenes.yview)
+            scrollbar_ordenes.pack(side=tk.RIGHT, fill=tk.Y)
+            tree_ordenes.configure(yscrollcommand=scrollbar_ordenes.set)
+            
+            # Llenar con órdenes
+            if ordenes_historial:
+                total_gastado = 0
+                for orden in ordenes_historial:
+                    items_count = len(orden.productos) if hasattr(orden, 'productos') else 0
+                    tree_ordenes.insert('', 'end', values=(
+                        f"#{orden.id}",
+                        orden.fecha.strftime('%Y-%m-%d %H:%M') if hasattr(orden, 'fecha') else 'N/A',
+                        orden.estado if hasattr(orden, 'estado') else 'Pendiente',
+                        f"${orden.total:.2f}" if hasattr(orden, 'total') else '$0.00',
+                        items_count
+                    ))
+                    if hasattr(orden, 'total'):
+                        total_gastado += orden.total
+                
+                # Resumen
+                resumen_frame = ttk.Frame(ventana_historial)
+                resumen_frame.pack(fill=tk.X, padx=10, pady=5)
+                
+                ttk.Label(resumen_frame, text=f"Total gastado: ${total_gastado:.2f}", 
+                         font=('Arial', 12, 'bold')).pack(anchor=tk.W)
+            else:
+                tree_ordenes.insert('', 'end', values=("Sin órdenes", "", "", "", ""))
+            
+            # Botón cerrar
+            ttk.Button(ventana_historial, text="Cerrar", 
+                      command=ventana_historial.destroy).pack(pady=10)
+                      
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al mostrar historial: {str(e)}")
+
     def actualizar_lista_productos(self):
         """Actualizar la lista de productos en el treeview"""
         # Limpiar treeview
@@ -425,13 +540,13 @@ Stock disponible: {producto.stock}
         
         # Pila de órdenes
         self.text_pila.delete(1.0, tk.END)
-        ordenes = self.pila_ordenes.obtener_todas()
+        ordenes = self.pila_ordenes.obtener_elementos()
         for orden in reversed(ordenes):
-            self.text_pila.insert(tk.END, f"Orden #{orden.id} - {orden.fecha} - ${orden.total:.2f}\n")
+            self.text_pila.insert(tk.END, f"Orden #{orden.id} - {orden.fecha.strftime('%Y-%m-%d %H:%M:%S')} - ${orden.total:.2f}\n")
         
         # Cola de pagos
         self.text_cola.delete(1.0, tk.END)
-        pagos = self.cola_pagos.obtener_todos()
+        pagos = self.cola_pagos.obtener_elementos()
         for pago in pagos:
             self.text_cola.insert(tk.END, f"Pago ${pago.monto:.2f} - {pago.fecha}\n")
     
@@ -448,10 +563,11 @@ Stock disponible: {producto.stock}
         
         # Crear pago
         pago = Pago(
+            id_pago=len(self.cola_pagos.obtener_elementos()) + 1,
             monto=self.carrito.calcular_total(),
-            fecha=datetime.now(),
+            metodo="Tarjeta de Crédito" if self.entry_tarjeta.get() else "Efectivo",
             cliente=self.entry_nombre.get(),
-            email=self.entry_email.get()
+            fecha=datetime.now()
         )
         
         # Agregar a la cola de pagos
@@ -469,12 +585,15 @@ Stock disponible: {producto.stock}
             return
         
         # Crear orden
+        fecha_actual = datetime.now()
         orden = Orden(
-            id=len(self.pila_ordenes.obtener_todas()) + 1,
-            items=self.carrito.productos.obtener_elementos().copy(),
-            total=self.carrito.calcular_total(),
-            fecha=datetime.now(),
-            cliente=self.entry_nombre.get()
+            id_orden=len(self.pila_ordenes.obtener_elementos()) + 1,
+            fecha_compra=fecha_actual,
+            productos=self.carrito.productos.obtener_elementos().copy(),
+            recibo=None,  # Se generará después
+            fecha_entrega=fecha_actual + timedelta(days=5),
+            fecha_envio=fecha_actual + timedelta(days=2),
+            total=self.carrito.calcular_total()
         )
         
         # Agregar a la pila de órdenes
@@ -509,13 +628,13 @@ Stock disponible: {producto.stock}
                     writer.writeheader()
                 
                 # Escribir cada item de la orden
-                for item in orden.items:
+                for item in orden.productos:
                     if hasattr(item, 'producto'):
                         # Es un ItemCarrito
                         writer.writerow({
                             'id_orden': orden.id,
                             'fecha': orden.fecha.strftime('%Y-%m-%d %H:%M:%S'),
-                            'cliente': orden.cliente,
+                            'cliente': self.entry_nombre.get(),
                             'producto': item.producto.nombre,
                             'cantidad': item.cantidad,
                             'precio_unitario': item.producto.precio,
@@ -527,7 +646,7 @@ Stock disponible: {producto.stock}
                         writer.writerow({
                             'id_orden': orden.id,
                             'fecha': orden.fecha.strftime('%Y-%m-%d %H:%M:%S'),
-                            'cliente': orden.cliente,
+                            'cliente': self.entry_nombre.get(),
                             'producto': item.nombre,
                             'cantidad': 1,
                             'precio_unitario': item.precio,
@@ -544,11 +663,162 @@ Stock disponible: {producto.stock}
         self.entry_tarjeta.delete(0, tk.END)
         self.entry_cvv.delete(0, tk.END)
         self.entry_fecha.delete(0, tk.END)
+    
+    def procesar_checkout_completo(self):
+        """Procesar checkout completo usando la clase Checkout"""
+        if self.carrito.esta_vacio():
+            messagebox.showwarning("Advertencia", "El carrito está vacío")
+            return
+        
+        try:
+            from Cliente import Cliente
+            from Checkout import Checkout
+            from TarjetaCredito import TarjetaCredito
+            
+            # Usar cliente autenticado o crear uno temporal
+            if self.cliente_autenticado:
+                cliente = self.cliente_autenticado
+            else:
+                # Validar campos para usuario invitado
+                if not self.entry_nombre.get() or not self.entry_email.get():
+                    messagebox.showerror("Error", "Por favor complete todos los campos del cliente")
+                    return
+                
+                # Crear cliente temporal
+                cliente = Cliente(
+                    id_cliente="invitado",
+                    nombre=self.entry_nombre.get(),
+                    email=self.entry_email.get(),
+                    carrito=self.carrito,
+                    telefono=""
+                )
+            
+            # Crear tarjeta de crédito si se proporciona
+            tarjeta = None
+            if self.entry_tarjeta.get() and self.entry_cvv.get() and self.entry_fecha.get():
+                from datetime import datetime
+                try:
+                    fecha_exp = datetime.strptime(self.entry_fecha.get(), "%m/%y").date()
+                    tarjeta = TarjetaCredito(
+                        numero=self.entry_tarjeta.get(),
+                        titular=self.entry_nombre.get(),
+                        fecha_expiracion=fecha_exp,
+                        cvv=self.entry_cvv.get()
+                    )
+                except ValueError:
+                    messagebox.showerror("Error", "Formato de fecha inválido. Use MM/YY")
+                    return
+            
+            # Crear checkout
+            checkout = Checkout(self.carrito, cliente, tarjeta)
+            
+            # Procesar checkout
+            metodo_pago = "Tarjeta de Crédito" if tarjeta else "Efectivo"
+            direccion_envio = "Dirección predeterminada"  # Se podría agregar un campo para esto
+            
+            checkout.procesar_checkout(direccion_envio, metodo_pago)
+            
+            # Agregar orden al historial del cliente
+            cliente.agregar_orden(checkout.orden)
+            
+            # Agregar orden a la pila
+            self.pila_ordenes.push(checkout.orden)
+            
+            # Crear y agregar pago a la cola
+            pago = Pago(
+                id_pago=len(self.cola_pagos.obtener_elementos()) + 1,
+                monto=checkout.total,
+                metodo=metodo_pago,
+                cliente=cliente.nombre,
+                fecha=datetime.now()
+            )
+            self.cola_pagos.enqueue(pago)
+            
+            # Actualizar visualizaciones
+            self.actualizar_carrito()
+            self.actualizar_visualizaciones()
+            
+            messagebox.showinfo("Éxito", f"Checkout completado exitosamente. Total: ${checkout.total:.2f}")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Error durante el checkout: {str(e)}")
+    
+    def cerrar_sesion(self):
+        """Cerrar la sesión actual y volver al login."""
+        if self.sistema_login:
+            self.sistema_login.cerrar_sesion()
+        
+        # Limpiar datos de la sesión
+        self.cliente_autenticado = None
+        self.carrito.vaciar()
+        
+        messagebox.showinfo("Sesión Cerrada", "Sesión cerrada exitosamente")
+        
+        # Cerrar ventana actual
+        self.root.destroy()
+        
+        # Mostrar login nuevamente
+        iniciar_aplicacion_con_login()
+    
+    def cerrar_aplicacion(self):
+        """Manejar el cierre de la aplicación."""
+        if self.sistema_login and self.sistema_login.esta_autenticado():
+            if messagebox.askyesno("Cerrar", "¿Está seguro de que desea cerrar la aplicación?"):
+                self.sistema_login.cerrar_sesion()
+                self.root.destroy()
+        else:
+            self.root.destroy()
+    
+    def rellenar_campos_cliente(self):
+        """Rellena los campos del formulario con datos del cliente autenticado."""
+        if hasattr(self, 'entry_nombre') and self.cliente_autenticado:
+            self.entry_nombre.delete(0, tk.END)
+            self.entry_nombre.insert(0, self.cliente_autenticado.nombre)
+            
+            self.entry_email.delete(0, tk.END)
+            self.entry_email.insert(0, self.cliente_autenticado.email)
+            
+            # Deshabilitar campos para usuarios autenticados
+            self.entry_nombre.config(state='readonly')
+            self.entry_email.config(state='readonly')
+
+def callback_login_exitoso(cliente, sistema_login):
+    """Callback ejecutado cuando el login es exitoso."""
+    # Cerrar cualquier ventana existente
+    for widget in tk._default_root.winfo_children() if tk._default_root else []:
+        if isinstance(widget, tk.Toplevel):
+            widget.destroy()
+    
+    # Crear nueva ventana principal
+    root = tk.Tk()
+    app = SistemaCompras(root, cliente, sistema_login)
+    root.mainloop()
+
+def iniciar_aplicacion_con_login():
+    """Inicia la aplicación mostrando primero el login."""
+    # Crear ventana root temporal (se destruirá después del login)
+    temp_root = tk.Tk()
+    temp_root.withdraw()  # Ocultar ventana temporal
+    
+    try:
+        # Mostrar login
+        cliente = mostrar_login(callback_login_exitoso)
+        
+        if not cliente:
+            # Usuario canceló el login
+            temp_root.destroy()
+            return
+            
+    except Exception as e:
+        messagebox.showerror("Error", f"Error en el sistema de login: {str(e)}")
+        temp_root.destroy()
+        return
+    
+    temp_root.destroy()
 
 def main():
-    root = tk.Tk()
-    app = SistemaCompras(root)
-    root.mainloop()
+    """Función principal que inicia con login."""
+    iniciar_aplicacion_con_login()
 
 if __name__ == "__main__":
     main()
