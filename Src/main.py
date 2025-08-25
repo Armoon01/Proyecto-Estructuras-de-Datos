@@ -825,10 +825,8 @@ Stock disponible: {producto.stock}
 
 def callback_login_exitoso(cliente, sistema_login):
     """Callback ejecutado cuando el login es exitoso."""
-    # Cerrar cualquier ventana existente
-    for widget in tk._default_root.winfo_children() if tk._default_root else []:
-        if isinstance(widget, tk.Toplevel):
-            widget.destroy()
+    print(f"✅ Login exitoso: {cliente.nombre}")
+    print(f"📧 Email: {cliente.email}")
     
     # Crear nueva ventana principal
     root = tk.Tk()
@@ -837,25 +835,18 @@ def callback_login_exitoso(cliente, sistema_login):
 
 def iniciar_aplicacion_con_login():
     """Inicia la aplicación mostrando primero el login."""
-    # Crear ventana root temporal (se destruirá después del login)
-    temp_root = tk.Tk()
-    temp_root.withdraw()  # Ocultar ventana temporal
-    
     try:
         # Mostrar login
         cliente = mostrar_login(callback_login_exitoso)
         
         if not cliente:
             # Usuario canceló el login
-            temp_root.destroy()
+            print("❌ Login cancelado")
             return
             
     except Exception as e:
-        messagebox.showerror("Error", f"Error en el sistema de login: {str(e)}")
-        temp_root.destroy()
+        print(f"Error en el sistema de login: {str(e)}")
         return
-    
-    temp_root.destroy()
 
 def main():
     """Función principal que inicia con login."""
