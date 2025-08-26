@@ -1,4 +1,21 @@
 class Pila:
+    """
+    Implementación de Pila (Stack) usando lista de Python
+    
+    Análisis de Complejidad Temporal:
+    - push(elemento): O(1) amortizado
+    - pop(): O(1) 
+    - peek(): O(1)
+    - esta_vacia(): O(1)
+    - obtener_tamaño(): O(1)
+    
+    Análisis de Complejidad Espacial: O(n) donde n es el número de elementos
+    
+    Notación Asintótica:
+    - Mejor caso: O(1) para todas las operaciones básicas
+    - Caso promedio: O(1) para todas las operaciones básicas  
+    - Peor caso: O(1) para todas las operaciones básicas
+    """
     def __init__(self):
         self.elementos = []
     

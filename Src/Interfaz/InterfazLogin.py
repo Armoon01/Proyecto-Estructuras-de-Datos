@@ -2,6 +2,13 @@ from customtkinter import *
 from PIL import Image
 from tkinter import messagebox
 import os
+import sys
+
+# Agregar el directorio padre al path para importar módulos
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
 from Login import SistemaLogin
 
 class LoginApp(CTk):
@@ -16,18 +23,23 @@ class LoginApp(CTk):
         self.sistema_login = SistemaLogin()
         self.callback_login_exitoso = callback_login_exitoso    
         self.cliente_autenticado = None
+        self._callback_ejecutado = False  # Flag para evitar doble ejecución
         
-        # Configuración de ventana más robusta
-        self.geometry("750x580")  # Aumentar ancho de 600 a 750
-        self.resizable(False, False)  # Más explícito
+        # Configuración de ventana más robusta (tamaño original que se veía bien)
+        self.geometry("750x580")  # Mantener tamaño original
+        self.resizable(False, False)  # No redimensionable
         self.title("Sistema Ecomerce - Login")
         
-        # Configurar escalado DPI
+        # Configurar escalado DPI como originalmente (sin forzar límites)
         try:
             import ctypes
-            ctypes.windll.shcore.SetProcessDpiAwareness(1)
+            # Usar configuración DPI original que funcionaba bien
+            ctypes.windll.shcore.SetProcessDpiAwareness(1)  # Volver a la configuración original
         except:
             pass  # En caso de que no esté en Windows
+        
+        # Configurar cierre de ventana
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
         
         # Centrar ventana
         self.centrar_ventana()
@@ -37,6 +49,18 @@ class LoginApp(CTk):
         
         # Mostrar interfaz de login inicial
         self.mostrar_login()
+        
+        # NO forzar tamaño - dejar que se muestre naturalmente
+    
+    def on_closing(self):
+        """Manejar cierre de ventana de login"""
+        try:
+            print("🚪 Cerrando ventana de login...")
+            self.cliente_autenticado = None
+            self.destroy()
+        except Exception as e:
+            print(f"Error cerrando login: {e}")
+            self.quit()
     
     def centrar_ventana(self):
         """Centra la ventana en la pantalla con mejor compatibilidad."""
@@ -63,9 +87,11 @@ class LoginApp(CTk):
     def cargar_imagenes(self):
         """Carga las imágenes necesarias con mejor manejo de errores."""
         try:
-            # Obtener directorio actual del script
+            # Obtener directorio actual del script (Src/Interfaz/)
             current_dir = os.path.dirname(os.path.abspath(__file__))
-            images_dir = os.path.join(current_dir, "Images")
+            # Subir un nivel para llegar a Src/ y luego entrar a Images/
+            src_dir = os.path.dirname(current_dir)
+            images_dir = os.path.join(src_dir, "Images")
             
             # Verificar que existe la carpeta
             if not os.path.exists(images_dir):
@@ -259,17 +285,44 @@ class LoginApp(CTk):
                 
                 # Ejecutar callback si existe
                 if self.callback_login_exitoso:
-                    self.callback_login_exitoso(cliente, self.sistema_login)
-                
-                self.destroy()
+                    # Cerrar la ventana de login antes de ejecutar callback
+                    self.withdraw()  # Ocultar ventana en lugar de destruir inmediatamente
+                    self.after(100, lambda: self._ejecutar_callback_y_cerrar(cliente))
+                else:
+                    self.destroy()
             else:
                 messagebox.showerror("❌ Error de Login", mensaje)
                 self.password_entry.delete(0, "end")
                 self.password_entry.focus()
         
+        except Exception as e:
+            messagebox.showerror("❌ Error", f"Error inesperado: {str(e)}")
+            print(f"Error en login: {e}")
+        
         finally:
-            # Restaurar botón
-            self.login_btn.configure(state="normal", text="Iniciar Sesión")
+            # Restaurar botón si la ventana aún existe
+            try:
+                self.login_btn.configure(state="normal", text="Iniciar Sesión")
+            except:
+                pass
+    
+    def _ejecutar_callback_y_cerrar(self, cliente):
+        """Ejecutar callback y cerrar login de forma segura"""
+        try:
+            if self.callback_login_exitoso and not self._callback_ejecutado:
+                self._callback_ejecutado = True
+                print(f"🔄 Ejecutando callback para {cliente.nombre}")
+                self.callback_login_exitoso(cliente, self.sistema_login)
+            
+            # Cerrar ventana de login
+            self.destroy()
+            
+        except Exception as e:
+            print(f"❌ Error ejecutando callback: {e}")
+            try:
+                self.destroy()
+            except:
+                self.quit()
     
     def procesar_registro(self):
         """Procesa el registro de un nuevo usuario."""
@@ -323,9 +376,29 @@ class LoginApp(CTk):
 
 def mostrar_login(callback_login_exitoso=None):
     """Función principal para mostrar el login."""
-    app = LoginApp(callback_login_exitoso)
-    app.mainloop()
-    return app.obtener_cliente()
+    try:
+        # Configurar CustomTkinter para login (configuración ligera)
+        set_appearance_mode("light")
+        set_default_color_theme("blue")
+        
+        print("🔐 Iniciando ventana de login...")
+        
+        app = LoginApp(callback_login_exitoso)
+        
+        # Si hay callback, no necesitamos el retorno del mainloop
+        if callback_login_exitoso:
+            app.mainloop()
+            return None
+        else:
+            # Solo para uso directo sin callback
+            app.mainloop()
+            return app.obtener_cliente()
+            
+    except Exception as e:
+        print(f"❌ Error en mostrar_login: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
 
 if __name__ == "__main__":
     # Prueba independiente

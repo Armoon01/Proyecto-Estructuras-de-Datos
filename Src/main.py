@@ -1,856 +1,1132 @@
-#IMPORTANTE ESTA CLASE MAIN SE CREO CON IA, PORQUE NO SE NADA DE GRAFICAR, 
-#hay que mover la parte de gui de esta clase a su respectiva clase
-
-
-import tkinter as tk
-from tkinter import ttk, messagebox
-import csv
-from datetime import datetime, timedelta
-import os
+import customtkinter as ctk
+import platform
 import sys
+import traceback
+import os
 
-# Agregar el directorio actual al path para importar módulos
-current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(current_dir)
+# Configurar tema
+ctk.set_appearance_mode("light")
+ctk.set_default_color_theme("blue")
 
-from Carrito import Carrito
-from Producto import Producto
-from Pago import Pago
-from Orden import Orden
-from estructuras.Cola import Cola
-from estructuras.Pila import Pila
-from Login import SistemaLogin
-from InterfazLogin import mostrar_login
+def configurar_dpi_awareness():
+    """Configurar DPI awareness para Windows"""
+    if platform.system() == "Windows":
+        try:
+            import ctypes
+            ctypes.windll.shcore.SetProcessDpiAwareness(1)
+        except Exception as e:
+            print(f"⚠️ Error configurando DPI awareness: {e}")
 
-class SistemaCompras:
-    def __init__(self, root, cliente_autenticado=None, sistema_login=None):
-        self.root = root
-        self.root.title("Sistema de Compras - Universidad")
-        self.root.geometry("1200x800")
+def configurar_rutas():
+    """Configurar rutas del proyecto"""
+    try:
+        # Obtener directorio del proyecto (3 niveles arriba desde Src/main.py)
+        project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         
-        # Sistema de autenticación
-        self.sistema_login = sistema_login
+        # Agregar rutas al sys.path
+        if project_dir not in sys.path:
+            sys.path.insert(0, project_dir)
+        
+        src_dir = os.path.join(project_dir, 'Src')
+        if src_dir not in sys.path:
+            sys.path.insert(0, src_dir)
+            
+        return project_dir
+    except Exception as e:
+        print(f"⚠️ Error configurando rutas: {e}")
+        return None
+
+# Configurar rutas antes de importar
+PROJECT_DIR = configurar_rutas()
+
+try:
+    # Importaciones base del sistema
+    from Interfaz.InterfazCarrito import InterfazCarrito
+    from Interfaz.InterfazCheckout import InterfazCheckout
+    from Interfaz.InterfazLogin import mostrar_login
+    from Interfaz.InterfazEstructuras import mostrar_visualizador_estructuras  # ✅ LÍNEA CORREGIDA
+    from Inventario import Inventario
+    from Carrito import Carrito
+    from Login import SistemaLogin
+    from estructuras.Pila import Pila
+    from estructuras.Cola import Cola
+    from Pago import Pago
+    from Orden import Orden
+    from Interfaz.InterfazCompras import InterfazCompras
+    print("✅ Todas las importaciones exitosas")
+except ImportError as e:
+    print(f"❌ Error importando módulos: {e}")
+    traceback.print_exc()
+    sys.exit(1)
+
+class SistemaEcommerce:
+    """Sistema principal de e-commerce"""
+    def __init__(self, cliente_autenticado=None):
         self.cliente_autenticado = cliente_autenticado
         
-        # Inicializar estructuras de datos
-        if cliente_autenticado:
-            self.carrito = cliente_autenticado.carrito  # Usar carrito del cliente autenticado
-        else:
-            self.carrito = Carrito("carrito_invitado")  # Carrito temporal para invitados
-            
-        self.lista_productos = []
-        self.pila_ordenes = Pila()
-        self.cola_pagos = Cola()
-        
-        # Cargar productos desde CSV
-        self.cargar_productos()
-        
-        # Crear interfaz
-        self.crear_interfaz()
-        
-        # Configurar cierre de aplicación
-        self.root.protocol("WM_DELETE_WINDOW", self.cerrar_aplicacion)
-    
-    def cargar_productos(self):
-        """Cargar productos desde archivo CSV"""
         try:
-            # Construir la ruta correcta al archivo CSV
-            data_path = os.path.join(os.path.dirname(current_dir), 'Data', 'productos.csv')
-            with open(data_path, 'r', newline='', encoding='utf-8') as file:
-                reader = csv.DictReader(file)
-                for row in reader:
-                    producto = Producto(
-                        id_producto=row['id_producto'],
-                        nombre=row['nombre'],
-                        descripcion=row['descripcion'],
-                        precio=float(row['precio']),
-                        stock=int(row['stock'])
-                    )
-                    self.lista_productos.append(producto)
-        except FileNotFoundError:
-            # Crear productos de ejemplo si no existe el archivo
-            self.crear_productos_ejemplo()
-    
-    def crear_productos_ejemplo(self):
-        """Crear productos de ejemplo y guardar en CSV"""
-        productos_ejemplo = [
-            {'id_producto': '1', 'nombre': 'Laptop HP', 'precio': 899.99, 'descripcion': 'Laptop HP 15 pulgadas', 'stock': 10},
-            {'id_producto': '2', 'nombre': 'Mouse Inalámbrico', 'precio': 25.50, 'descripcion': 'Mouse inalámbrico Logitech', 'stock': 50},
-            {'id_producto': '3', 'nombre': 'Teclado Mecánico', 'precio': 89.99, 'descripcion': 'Teclado mecánico RGB', 'stock': 20},
-            {'id_producto': '4', 'nombre': 'Monitor 24"', 'precio': 199.99, 'descripcion': 'Monitor LED 24 pulgadas', 'stock': 15},
-            {'id_producto': '5', 'nombre': 'Auriculares', 'precio': 45.00, 'descripcion': 'Auriculares con micrófono', 'stock': 30}
-        ]
+            # Inicializar componentes del sistema
+            self.inventario = Inventario()
+            self.pila_ordenes = Pila()
+            self.cola_pagos = Cola()
+            
+            # ✅ ARREGLO: Configurar carrito con el sistema mejorado
+            if cliente_autenticado and hasattr(cliente_autenticado, 'carrito'):
+                self.carrito = cliente_autenticado.carrito
+                print(f"🛒 Carrito del cliente cargado: {self.carrito}")
+            else:
+                cliente_id = cliente_autenticado.id if cliente_autenticado else "invitado"
+                self.carrito = Carrito(cliente_id)
+                print(f"🛒 Nuevo carrito creado para: {cliente_id}")
+                
+            # ✅ DEBUG: Verificar estado inicial del carrito
+            print(f"🔍 DEBUG: Carrito inicial - Items: {self.carrito.obtener_cantidad_items()}")
+            print(f"🔍 DEBUG: Carrito inicial - Total: ${self.carrito.calcular_total():.2f}")
+                
+            print(f"🔧 Sistema inicializado correctamente")
+            
+        except Exception as e:
+            print(f"❌ Error inicializando sistema: {e}")
+            traceback.print_exc()
+            raise
+
+    def obtener_productos(self):
+        """Obtener lista de productos del inventario"""
+        try:
+            return self.inventario.obtener_productos()
+        except Exception as e:
+            print(f"❌ Error obteniendo productos: {e}")
+            return []
+
+class AplicacionPrincipal(ctk.CTk):
+    """Aplicación principal con interfaz mejorada"""
+    def __init__(self, cliente_autenticado=None):
+        super().__init__()
         
-        # Crear directorio Data si no existe
-        data_dir = os.path.join(os.path.dirname(current_dir), 'Data')
-        os.makedirs(data_dir, exist_ok=True)
+        # Configuración de ventana
+        self.title("🛒 Sistema de E-commerce - Tienda Universitaria")
+        self.geometry("1400x850")
+        self.minsize(1200, 700)
+        self.resizable(True, True)
         
-        data_path = os.path.join(data_dir, 'productos.csv')
-        with open(data_path, 'w', newline='', encoding='utf-8') as file:
-            fieldnames = ['id_producto', 'nombre', 'precio', 'descripcion', 'stock']
-            writer = csv.DictWriter(file, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(productos_ejemplo)
+        # Variables de estado
+        self.cliente_autenticado = cliente_autenticado
+        self.vista_actual = "compras"
         
-        for prod in productos_ejemplo:
-            producto = Producto(
-                id_producto=prod['id_producto'],
-                nombre=prod['nombre'],
-                descripcion=prod['descripcion'],
-                precio=prod['precio'],
-                stock=prod['stock']
-            )
-            self.lista_productos.append(producto)
+        # ✅ VARIABLES PARA GESTIÓN DE INTERFACES
+        self.interfaz_compras = None
+        self.interfaz_carrito = None
+        self.interfaz_checkout = None
+        self.interfaz_historial = None
+        
+        try:
+            # Inicializar sistema
+            self.sistema = SistemaEcommerce(cliente_autenticado)
+            
+            # ✅ DEBUG: Verificar sistema después de inicialización
+            print(f"🔍 DEBUG: Sistema creado - Carrito: {self.sistema.carrito}")
+            print(f"🔍 DEBUG: Productos disponibles: {len(self.sistema.obtener_productos())}")
+            
+            # Crear interfaz
+            self.crear_interfaz()
+            
+            # Configurar cierre de ventana
+            self.protocol("WM_DELETE_WINDOW", self.on_closing)
+            
+            print("🎉 Aplicación principal iniciada correctamente")
+            
+        except Exception as e:
+            print(f"❌ Error inicializando aplicación: {e}")
+            traceback.print_exc()
+            self.mostrar_error_critico(str(e))
     
     def crear_interfaz(self):
-        """Crear la interfaz gráfica principal"""
-        # Frame principal
-        main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-        
-        # Configurar grid
-        self.root.columnconfigure(0, weight=1)
-        self.root.rowconfigure(0, weight=1)
-        main_frame.columnconfigure(1, weight=1)
-        main_frame.columnconfigure(3, weight=1)
-        
-        # Título con información del usuario
-        if self.cliente_autenticado:
-            usuario_info = f"Sistema de Compras - Bienvenido, {self.cliente_autenticado.nombre}"
-            if self.sistema_login and self.sistema_login.es_administrador():
-                usuario_info += " (Administrador)"
-        else:
-            usuario_info = "Sistema de Compras - Modo Invitado"
-            
-        titulo = ttk.Label(main_frame, text=usuario_info, font=('Arial', 16, 'bold'))
-        titulo.grid(row=0, column=0, columnspan=4, pady=(0, 20))
-        
-        # Panel izquierdo - Productos
-        self.crear_panel_productos(main_frame)
-        
-        # Panel central - Carrito
-        self.crear_panel_carrito(main_frame)
-        
-        # Panel derecho - Estructuras de datos
-        self.crear_panel_estructuras(main_frame)
-        
-        # Panel inferior - Checkout
-        self.crear_panel_checkout(main_frame)
-    
-    def crear_panel_productos(self, parent):
-        """Crear panel de productos"""
-        frame = ttk.LabelFrame(parent, text="Productos Disponibles", padding="10")
-        frame.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), padx=(0, 10))
-        
-        # Treeview para productos
-        columns = ('ID', 'Nombre', 'Precio', 'Stock')
-        self.tree_productos = ttk.Treeview(frame, columns=columns, show='headings', height=8)
-        
-        for col in columns:
-            self.tree_productos.heading(col, text=col)
-            self.tree_productos.column(col, width=100)
-        
-        self.tree_productos.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S))
-        
-        # Scrollbar
-        scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=self.tree_productos.yview)
-        scrollbar.grid(row=0, column=2, sticky=(tk.N, tk.S))
-        self.tree_productos.configure(yscrollcommand=scrollbar.set)
-        
-        # Botones
-        btn_frame = ttk.Frame(frame)
-        btn_frame.grid(row=1, column=0, columnspan=2, pady=(10, 0))
-        
-        ttk.Button(btn_frame, text="Agregar al Carrito", command=self.agregar_al_carrito).pack(side=tk.LEFT, padx=(0, 5))
-        ttk.Button(btn_frame, text="Ver Detalles", command=self.ver_detalles_producto).pack(side=tk.LEFT)
-        
-        # Cargar productos en el treeview
-        self.actualizar_lista_productos()
-    
-    def crear_panel_carrito(self, parent):
-        """Crear panel del carrito"""
-        frame = ttk.LabelFrame(parent, text="Carrito de Compras", padding="10")
-        frame.grid(row=1, column=2, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), padx=(10, 0))
-        
-        # Treeview para carrito
-        columns = ('Producto', 'Cantidad', 'Precio Unit.', 'Subtotal')
-        self.tree_carrito = ttk.Treeview(frame, columns=columns, show='headings', height=8)
-        
-        for col in columns:
-            self.tree_carrito.heading(col, text=col)
-            self.tree_carrito.column(col, width=100)
-        
-        self.tree_carrito.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S))
-        
-        # Scrollbar
-        scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=self.tree_carrito.yview)
-        scrollbar.grid(row=0, column=2, sticky=(tk.N, tk.S))
-        self.tree_carrito.configure(yscrollcommand=scrollbar.set)
-        
-        # Botones del carrito
-        btn_frame = ttk.Frame(frame)
-        btn_frame.grid(row=1, column=0, columnspan=2, pady=(10, 0))
-        
-        ttk.Button(btn_frame, text="Eliminar Item", command=self.eliminar_del_carrito).pack(side=tk.LEFT, padx=(0, 5))
-        ttk.Button(btn_frame, text="Modificar Cantidad", command=self.modificar_cantidad).pack(side=tk.LEFT, padx=(0, 5))
-        ttk.Button(btn_frame, text="Vaciar Carrito", command=self.vaciar_carrito).pack(side=tk.LEFT)
-        
-        # Total
-        self.lbl_total = ttk.Label(frame, text="Total: $0.00", font=('Arial', 12, 'bold'))
-        self.lbl_total.grid(row=2, column=0, columnspan=2, pady=(10, 0))
-    
-    def crear_panel_estructuras(self, parent):
-        """Crear panel para mostrar estructuras de datos"""
-        frame = ttk.LabelFrame(parent, text="Visualización de Estructuras", padding="10")
-        frame.grid(row=2, column=0, columnspan=4, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(10, 0))
-        
-        # Notebook para pestañas
-        notebook = ttk.Notebook(frame)
-        notebook.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-        
-        # Pestaña Lista de Productos
-        frame_lista = ttk.Frame(notebook)
-        notebook.add(frame_lista, text="Lista de Productos")
-        
-        self.text_lista = tk.Text(frame_lista, height=6, width=50)
-        self.text_lista.pack(fill=tk.BOTH, expand=True)
-        
-        # Pestaña Pila de Órdenes
-        frame_pila = ttk.Frame(notebook)
-        notebook.add(frame_pila, text="Pila de Órdenes")
-        
-        self.text_pila = tk.Text(frame_pila, height=6, width=50)
-        self.text_pila.pack(fill=tk.BOTH, expand=True)
-        
-        # Pestaña Cola de Pagos
-        frame_cola = ttk.Frame(notebook)
-        notebook.add(frame_cola, text="Cola de Pagos")
-        
-        self.text_cola = tk.Text(frame_cola, height=6, width=50)
-        self.text_cola.pack(fill=tk.BOTH, expand=True)
-        
-        # Actualizar visualizaciones
-        self.actualizar_visualizaciones()
-    
-    def crear_panel_checkout(self, parent):
-        """Crear panel de checkout"""
-        frame = ttk.LabelFrame(parent, text="Checkout y Pago", padding="10")
-        frame.grid(row=3, column=0, columnspan=4, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(10, 0))
-        
-        # Información del cliente
-        cliente_frame = ttk.Frame(frame)
-        cliente_frame.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
-        
-        ttk.Label(cliente_frame, text="Nombre:").grid(row=0, column=0, sticky=tk.W)
-        self.entry_nombre = ttk.Entry(cliente_frame, width=30)
-        self.entry_nombre.grid(row=0, column=1, padx=(5, 10))
-        
-        ttk.Label(cliente_frame, text="Email:").grid(row=0, column=2, sticky=tk.W)
-        self.entry_email = ttk.Entry(cliente_frame, width=30)
-        self.entry_email.grid(row=0, column=3, padx=(5, 0))
-        
-        # Información de pago
-        pago_frame = ttk.Frame(frame)
-        pago_frame.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
-        
-        ttk.Label(pago_frame, text="Número de Tarjeta:").grid(row=0, column=0, sticky=tk.W)
-        self.entry_tarjeta = ttk.Entry(pago_frame, width=20)
-        self.entry_tarjeta.grid(row=0, column=1, padx=(5, 10))
-        
-        ttk.Label(pago_frame, text="CVV:").grid(row=0, column=2, sticky=tk.W)
-        self.entry_cvv = ttk.Entry(pago_frame, width=10)
-        self.entry_cvv.grid(row=0, column=3, padx=(5, 10))
-        
-        ttk.Label(pago_frame, text="Fecha Vencimiento:").grid(row=0, column=4, sticky=tk.W)
-        self.entry_fecha = ttk.Entry(pago_frame, width=10)
-        self.entry_fecha.grid(row=0, column=5, padx=(5, 0))
-        
-        # Botones de checkout
-        btn_frame = ttk.Frame(frame)
-        btn_frame.grid(row=2, column=0, columnspan=2, pady=(10, 0))
-        
-        ttk.Button(btn_frame, text="Procesar Pago", command=self.procesar_pago).pack(side=tk.LEFT, padx=(0, 5))
-        ttk.Button(btn_frame, text="Generar Orden", command=self.generar_orden).pack(side=tk.LEFT, padx=(0, 5))
-        ttk.Button(btn_frame, text="Checkout Completo", command=self.procesar_checkout_completo).pack(side=tk.LEFT, padx=(0, 5))
-        ttk.Button(btn_frame, text="Ver Historial", command=self.mostrar_historial_cliente).pack(side=tk.LEFT, padx=(0, 5))
-        ttk.Button(btn_frame, text="Limpiar Formulario", command=self.limpiar_formulario).pack(side=tk.LEFT, padx=(0, 5))
-        ttk.Button(btn_frame, text="Cerrar Sesión", command=self.cerrar_sesion).pack(side=tk.LEFT)
-        
-        # Si hay cliente autenticado, rellenar campos
-        if self.cliente_autenticado:
-            self.rellenar_campos_cliente()
-    
-    def mostrar_historial_cliente(self):
-        """Mostrar historial de órdenes del cliente actual"""
-        if not self.entry_nombre.get() or not self.entry_email.get():
-            messagebox.showwarning("Advertencia", "Por favor complete los campos del cliente")
-            return
-        
+        """Crear la interfaz principal"""
         try:
-            from Cliente import Cliente
+            # Header principal
+            self.crear_header()
             
-            # Crear un cliente temporal para mostrar historial
-            # En una aplicación real, buscaríamos el cliente en una base de datos
-            cliente_temp = Cliente(
-                id_cliente="temp",
-                nombre=self.entry_nombre.get(),
-                email=self.entry_email.get(),
-                carrito=self.carrito,
-                telefono=""
+            # Contenedor principal con scroll
+            self.contenedor_principal = ctk.CTkFrame(self, fg_color="#ffffff")
+            self.contenedor_principal.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+            
+            # Mostrar vista inicial
+            self.mostrar_compras()
+            
+        except Exception as e:
+            print(f"❌ Error creando interfaz: {e}")
+            self.mostrar_error_critico(str(e))
+    
+    def crear_header(self):
+        """✅ CORREGIDO: Crear header completo con grid layout"""
+        try:
+            # Frame principal del header
+            self.header_frame = ctk.CTkFrame(self, height=85, fg_color="#1e40af")
+            self.header_frame.pack(fill="x", padx=10, pady=(10, 5))
+            self.header_frame.pack_propagate(False)
+            
+            # ✅ CONFIGURAR GRID PARA DISTRIBUCIÓN CORRECTA
+            self.header_frame.grid_columnconfigure(1, weight=1)  # Columna central expandible
+            
+            # ✅ LOGO Y TÍTULO (COLUMNA 0)
+            logo_frame = ctk.CTkFrame(self.header_frame, fg_color="transparent")
+            logo_frame.grid(row=0, column=0, sticky="w", padx=20, pady=15)
+            
+            titulo = ctk.CTkLabel(
+                logo_frame, 
+                text="🛒 Tienda Universitaria", 
+                font=("Arial", 26, "bold"),
+                text_color="white"
             )
+            titulo.pack()
             
-            # Simular órdenes del historial (en una app real, se cargarían de la BD)
-            # Por ahora, mostraremos las órdenes de la pila actual
-            ordenes_historial = self.pila_ordenes.obtener_elementos()
+            # ✅ NAVEGACIÓN CENTRAL (COLUMNA 1)
+            nav_frame = ctk.CTkFrame(self.header_frame, fg_color="transparent")
+            nav_frame.grid(row=0, column=1, pady=20)
             
-            # Crear ventana de historial
-            ventana_historial = tk.Toplevel(self.root)
-            ventana_historial.title(f"Historial de Órdenes - {cliente_temp.nombre}")
-            ventana_historial.geometry("800x600")
-            ventana_historial.transient(self.root)
-            ventana_historial.grab_set()
+            # Botones de navegación
+            self.crear_botones_navegacion(nav_frame)
             
-            # Información del cliente
-            info_frame = ttk.LabelFrame(ventana_historial, text="Información del Cliente", padding="10")
-            info_frame.pack(fill=tk.X, padx=10, pady=5)
+            # ✅ PANEL DE USUARIO (COLUMNA 2)
+            self.crear_panel_usuario()
             
-            ttk.Label(info_frame, text=f"Nombre: {cliente_temp.nombre}").pack(anchor=tk.W)
-            ttk.Label(info_frame, text=f"Email: {cliente_temp.email}").pack(anchor=tk.W)
-            ttk.Label(info_frame, text=f"Total de órdenes: {len(ordenes_historial)}").pack(anchor=tk.W)
-            
-            # Lista de órdenes
-            ordenes_frame = ttk.LabelFrame(ventana_historial, text="Historial de Órdenes", padding="10")
-            ordenes_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
-            
-            # Treeview para órdenes
-            columns = ('Orden', 'Fecha', 'Estado', 'Total', 'Items')
-            tree_ordenes = ttk.Treeview(ordenes_frame, columns=columns, show='headings', height=15)
-            
-            for col in columns:
-                tree_ordenes.heading(col, text=col)
-                tree_ordenes.column(col, width=120)
-            
-            tree_ordenes.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
-            
-            # Scrollbar
-            scrollbar_ordenes = ttk.Scrollbar(ordenes_frame, orient=tk.VERTICAL, command=tree_ordenes.yview)
-            scrollbar_ordenes.pack(side=tk.RIGHT, fill=tk.Y)
-            tree_ordenes.configure(yscrollcommand=scrollbar_ordenes.set)
-            
-            # Llenar con órdenes
-            if ordenes_historial:
-                total_gastado = 0
-                for orden in ordenes_historial:
-                    items_count = len(orden.productos) if hasattr(orden, 'productos') else 0
-                    tree_ordenes.insert('', 'end', values=(
-                        f"#{orden.id}",
-                        orden.fecha.strftime('%Y-%m-%d %H:%M') if hasattr(orden, 'fecha') else 'N/A',
-                        orden.estado if hasattr(orden, 'estado') else 'Pendiente',
-                        f"${orden.total:.2f}" if hasattr(orden, 'total') else '$0.00',
-                        items_count
-                    ))
-                    if hasattr(orden, 'total'):
-                        total_gastado += orden.total
-                
-                # Resumen
-                resumen_frame = ttk.Frame(ventana_historial)
-                resumen_frame.pack(fill=tk.X, padx=10, pady=5)
-                
-                ttk.Label(resumen_frame, text=f"Total gastado: ${total_gastado:.2f}", 
-                         font=('Arial', 12, 'bold')).pack(anchor=tk.W)
-            else:
-                tree_ordenes.insert('', 'end', values=("Sin órdenes", "", "", "", ""))
-            
-            # Botón cerrar
-            ttk.Button(ventana_historial, text="Cerrar", 
-                      command=ventana_historial.destroy).pack(pady=10)
-                      
         except Exception as e:
-            messagebox.showerror("Error", f"Error al mostrar historial: {str(e)}")
-
-    def actualizar_lista_productos(self):
-        """Actualizar la lista de productos en el treeview"""
-        # Limpiar treeview
-        for item in self.tree_productos.get_children():
-            self.tree_productos.delete(item)
-        
-        # Agregar productos
-        for producto in self.lista_productos:
-            self.tree_productos.insert('', 'end', values=(
-                producto.getIdProducto(),
-                producto.nombre,
-                f"${producto.precio:.2f}",
-                producto.stock
-            ))
+            print(f"❌ Error creando header: {e}")
+            traceback.print_exc()
     
-    def agregar_al_carrito(self):
-        """Agregar producto seleccionado al carrito"""
-        selection = self.tree_productos.selection()
-        if not selection:
-            messagebox.showwarning("Advertencia", "Por favor seleccione un producto")
-            return
-        
-        item = self.tree_productos.item(selection[0])
-        producto_id = item['values'][0]
-        
-        # Buscar producto
-        producto = None
-        for p in self.lista_productos:
-            if str(p.getIdProducto()) == str(producto_id):
-                producto = p
-                break
-        
-        if producto:
-            # Agregar al carrito
-            resultado = self.carrito.agregar_producto_con_cantidad(producto, 1)
-            self.actualizar_carrito()
-            if resultado:
-                messagebox.showinfo("Éxito", f"Producto '{producto.nombre}' agregado al carrito")
-            else:
-                messagebox.showerror("Error", "No se pudo agregar el producto al carrito")
-        else:
-            messagebox.showerror("Error", f"No se encontró el producto con ID: {producto_id}")
-    
-    def actualizar_carrito(self):
-        """Actualizar la visualización del carrito"""
-        # Limpiar treeview
-        for item in self.tree_carrito.get_children():
-            self.tree_carrito.delete(item)
-        
-        # Agregar items del carrito
-        elementos = self.carrito.productos.obtener_elementos()
-        for item in elementos:
-            if hasattr(item, 'producto'):
-                # Es un ItemCarrito
-                subtotal = item.producto.precio * item.cantidad
-                self.tree_carrito.insert('', 'end', values=(
-                    item.producto.nombre,
-                    item.cantidad,
-                    f"${item.producto.precio:.2f}",
-                    f"${subtotal:.2f}"
-                ))
-            else:
-                # Es un producto directo
-                self.tree_carrito.insert('', 'end', values=(
-                    item.nombre,
-                    1,
-                    f"${item.precio:.2f}",
-                    f"${item.precio:.2f}"
-                ))
-        
-        # Actualizar total
-        total = self.carrito.calcular_total()
-        self.lbl_total.config(text=f"Total: ${total:.2f}")
-    
-    def eliminar_del_carrito(self):
-        """Eliminar item seleccionado del carrito"""
-        selection = self.tree_carrito.selection()
-        if not selection:
-            messagebox.showwarning("Advertencia", "Por favor seleccione un item del carrito")
-            return
-        
-        index = self.tree_carrito.index(selection[0])
-        self.carrito.eliminar_item(index)
-        self.actualizar_carrito()
-        messagebox.showinfo("Éxito", "Item eliminado del carrito")
-    
-    def modificar_cantidad(self):
-        """Modificar cantidad de un item del carrito"""
-        selection = self.tree_carrito.selection()
-        if not selection:
-            messagebox.showwarning("Advertencia", "Por favor seleccione un item del carrito")
-            return
-        
-        index = self.tree_carrito.index(selection[0])
-        
-        # Ventana de diálogo para nueva cantidad
-        dialog = tk.Toplevel(self.root)
-        dialog.title("Modificar Cantidad")
-        dialog.geometry("300x150")
-        dialog.transient(self.root)
-        dialog.grab_set()
-        
-        ttk.Label(dialog, text="Nueva cantidad:").pack(pady=10)
-        entry_cantidad = ttk.Entry(dialog)
-        entry_cantidad.pack(pady=5)
-        
-        elementos = self.carrito.productos.obtener_elementos()
-        if 0 <= index < len(elementos):
-            if hasattr(elementos[index], 'cantidad'):
-                entry_cantidad.insert(0, str(elementos[index].cantidad))
-            else:
-                entry_cantidad.insert(0, "1")
-        
-        def confirmar():
-            try:
-                nueva_cantidad = int(entry_cantidad.get())
-                if nueva_cantidad > 0:
-                    self.carrito.modificar_cantidad(index, nueva_cantidad)
-                    self.actualizar_carrito()
-                    dialog.destroy()
-                    messagebox.showinfo("Éxito", "Cantidad modificada")
-                else:
-                    messagebox.showerror("Error", "La cantidad debe ser mayor a 0")
-            except ValueError:
-                messagebox.showerror("Error", "Por favor ingrese un número válido")
-        
-        ttk.Button(dialog, text="Confirmar", command=confirmar).pack(pady=10)
-    
-    def vaciar_carrito(self):
-        """Vaciar todo el carrito"""
-        if messagebox.askyesno("Confirmar", "¿Está seguro de que desea vaciar el carrito?"):
-            self.carrito.vaciar()
-            self.actualizar_carrito()
-            messagebox.showinfo("Éxito", "Carrito vaciado")
-    
-    def ver_detalles_producto(self):
-        """Mostrar detalles del producto seleccionado"""
-        selection = self.tree_productos.selection()
-        if not selection:
-            messagebox.showwarning("Advertencia", "Por favor seleccione un producto")
-            return
-        
-        item = self.tree_productos.item(selection[0])
-        producto_id = item['values'][0]
-        
-        # Buscar producto
-        producto = None
-        for p in self.lista_productos:
-            if p.getIdProducto() == producto_id:
-                producto = p
-                break
-        
-        if producto:
-            detalles = f"""
-Detalles del Producto:
-ID: {producto.getIdProducto()}
-Nombre: {producto.nombre}
-Precio: ${producto.precio:.2f}
-Descripción: {producto.descripcion}
-Stock disponible: {producto.stock}
-            """
-            messagebox.showinfo("Detalles del Producto", detalles)
-    
-    def actualizar_visualizaciones(self):
-        """Actualizar las visualizaciones de las estructuras de datos"""
-        # Lista de productos
-        self.text_lista.delete(1.0, tk.END)
-        for producto in self.lista_productos:
-            self.text_lista.insert(tk.END, f"{producto.getIdProducto()}. {producto.nombre} - ${producto.precio:.2f}\n")
-        
-        # Pila de órdenes
-        self.text_pila.delete(1.0, tk.END)
-        ordenes = self.pila_ordenes.obtener_elementos()
-        for orden in reversed(ordenes):
-            self.text_pila.insert(tk.END, f"Orden #{orden.id} - {orden.fecha.strftime('%Y-%m-%d %H:%M:%S')} - ${orden.total:.2f}\n")
-        
-        # Cola de pagos
-        self.text_cola.delete(1.0, tk.END)
-        pagos = self.cola_pagos.obtener_elementos()
-        for pago in pagos:
-            self.text_cola.insert(tk.END, f"Pago ${pago.monto:.2f} - {pago.fecha}\n")
-    
-    def procesar_pago(self):
-        """Procesar el pago del carrito"""
-        if self.carrito.esta_vacio():
-            messagebox.showwarning("Advertencia", "El carrito está vacío")
-            return
-        
-        # Validar campos
-        if not self.entry_nombre.get() or not self.entry_email.get():
-            messagebox.showerror("Error", "Por favor complete todos los campos")
-            return
-        
-        # Crear pago
-        pago = Pago(
-            id_pago=len(self.cola_pagos.obtener_elementos()) + 1,
-            monto=self.carrito.calcular_total(),
-            metodo="Tarjeta de Crédito" if self.entry_tarjeta.get() else "Efectivo",
-            cliente=self.entry_nombre.get(),
-            fecha=datetime.now()
-        )
-        
-        # Agregar a la cola de pagos
-        self.cola_pagos.enqueue(pago)
-        
-        # Guardar pago en CSV
-        self.guardar_pago_csv(pago)
-        
-        # Actualizar visualizaciones
-        self.actualizar_visualizaciones()
-        
-        messagebox.showinfo("Éxito", f"Pago procesado por ${pago.monto:.2f}")
-    
-    def generar_orden(self):
-        """Generar orden de compra"""
-        if self.carrito.esta_vacio():
-            messagebox.showwarning("Advertencia", "El carrito está vacío")
-            return
-        
-        # Crear orden
-        fecha_actual = datetime.now()
-        orden = Orden(
-            id_orden=len(self.pila_ordenes.obtener_elementos()) + 1,
-            fecha_compra=fecha_actual,
-            productos=self.carrito.productos.obtener_elementos().copy(),
-            recibo=None,  # Se generará después
-            fecha_entrega=fecha_actual + timedelta(days=5),
-            fecha_envio=fecha_actual + timedelta(days=2),
-            total=self.carrito.calcular_total()
-        )
-        
-        # Agregar a la pila de órdenes
-        self.pila_ordenes.push(orden)
-        
-        # Actualizar visualizaciones
-        self.actualizar_visualizaciones()
-        
-        # Guardar orden en CSV
-        self.guardar_orden_csv(orden)
-        
-        messagebox.showinfo("Éxito", f"Orden #{orden.id} generada exitosamente")
-        
-        # Vaciar carrito después de generar orden
-        self.carrito.vaciar()
-        self.actualizar_carrito()
-    
-    def guardar_orden_csv(self, orden):
-        """Guardar orden en archivo CSV"""
+    def crear_botones_navegacion(self, parent):
+        """✅ MEJORADO: Crear botones de navegación con historial"""
         try:
-            # Crear directorio Data si no existe
-            data_dir = os.path.join(os.path.dirname(current_dir), 'Data')
-            os.makedirs(data_dir, exist_ok=True)
+            # Botón Productos
+            self.btn_compras = ctk.CTkButton(
+                parent,
+                text="🛍️ Productos",
+                command=self.mostrar_compras,
+                width=130,
+                height=40,
+                font=("Arial", 14, "bold"),
+                fg_color="#3b82f6",
+                hover_color="#2563eb",
+                corner_radius=20
+            )
+            self.btn_compras.pack(side="left", padx=8)
             
-            data_path = os.path.join(data_dir, 'ordenes.csv')
-            with open(data_path, 'a', newline='', encoding='utf-8') as file:
-                fieldnames = ['id_orden', 'fecha', 'cliente', 'producto', 'cantidad', 'precio_unitario', 'subtotal', 'total_orden']
-                writer = csv.DictWriter(file, fieldnames=fieldnames)
-                
-                # Escribir header si el archivo está vacío
-                if file.tell() == 0:
-                    writer.writeheader()
-                
-                # Escribir cada item de la orden
-                for item in orden.productos:
-                    if hasattr(item, 'producto'):
-                        # Es un ItemCarrito
-                        writer.writerow({
-                            'id_orden': orden.id,
-                            'fecha': orden.fecha.strftime('%Y-%m-%d %H:%M:%S'),
-                            'cliente': self.entry_nombre.get(),
-                            'producto': item.producto.nombre,
-                            'cantidad': item.cantidad,
-                            'precio_unitario': item.producto.precio,
-                            'subtotal': item.producto.precio * item.cantidad,
-                            'total_orden': orden.total
-                        })
-                    else:
-                        # Es un producto directo
-                        writer.writerow({
-                            'id_orden': orden.id,
-                            'fecha': orden.fecha.strftime('%Y-%m-%d %H:%M:%S'),
-                            'cliente': self.entry_nombre.get(),
-                            'producto': item.nombre,
-                            'cantidad': 1,
-                            'precio_unitario': item.precio,
-                            'subtotal': item.precio,
-                            'total_orden': orden.total
-                        })
+            # Botón Carrito con contador
+            self.btn_carrito = ctk.CTkButton(
+                parent,
+                text="🛒 Mi Carrito",
+                command=self.mostrar_carrito,
+                width=130,
+                height=40,
+                font=("Arial", 14, "bold"),
+                fg_color="#059669",
+                hover_color="#047857",
+                corner_radius=20
+            )
+            self.btn_carrito.pack(side="left", padx=8)
+            
+            # ✅ NUEVO: Botón Historial
+            self.btn_historial = ctk.CTkButton(
+                parent,
+                text="📋 Historial",
+                command=self.mostrar_historial,
+                width=130,
+                height=40,
+                font=("Arial", 14, "bold"),
+                fg_color="#f59e0b",
+                hover_color="#d97706",
+                corner_radius=20
+            )
+            self.btn_historial.pack(side="left", padx=8)
+            
+            # Botón Checkout
+            self.btn_checkout = ctk.CTkButton(
+                parent,
+                text="💳 Checkout",
+                command=self.mostrar_checkout,
+                width=130,
+                height=40,
+                font=("Arial", 14, "bold"),
+                fg_color="#7c3aed",
+                hover_color="#6d28d9",
+                corner_radius=20
+            )
+            self.btn_checkout.pack(side="left", padx=8)
+            
         except Exception as e:
-            messagebox.showerror("Error", f"Error al guardar la orden: {str(e)}")
+            print(f"❌ Error creando botones: {e}")
     
-    def guardar_pago_csv(self, pago):
-        """Guardar pago en archivo CSV"""
+    def crear_panel_usuario(self):
+        """✅ CORREGIDO: Crear panel de usuario completo con estructuras y logout"""
         try:
-            # Crear directorio Data si no existe
-            data_dir = os.path.join(os.path.dirname(current_dir), 'Data')
-            os.makedirs(data_dir, exist_ok=True)
+            # Frame para el panel de usuario (columna 2 del grid)
+            user_frame = ctk.CTkFrame(self.header_frame, fg_color="transparent")
+            user_frame.grid(row=0, column=2, sticky="e", padx=20, pady=15)
             
-            data_path = os.path.join(data_dir, 'pagos.csv')
-            
-            # Verificar si el archivo existe para escribir header
-            file_exists = os.path.exists(data_path)
-            
-            with open(data_path, 'a', newline='', encoding='utf-8') as file:
-                fieldnames = ['id_pago', 'fecha', 'cliente', 'email', 'monto', 'metodo', 'numero_tarjeta', 'estado']
-                writer = csv.DictWriter(file, fieldnames=fieldnames)
-                
-                # Escribir header si el archivo es nuevo
-                if not file_exists:
-                    writer.writeheader()
-                
-                # Escribir datos del pago
-                writer.writerow({
-                    'id_pago': pago.id_pago,
-                    'fecha': pago.fecha.strftime('%Y-%m-%d %H:%M:%S'),
-                    'cliente': self.entry_nombre.get(),
-                    'email': self.entry_email.get(),
-                    'monto': pago.monto,
-                    'metodo': pago.metodo,
-                    'numero_tarjeta': self.entry_tarjeta.get()[-4:] if self.entry_tarjeta.get() else 'N/A',  # Solo últimos 4 dígitos
-                    'estado': 'Completado'
-                })
-                
-        except Exception as e:
-            messagebox.showerror("Error", f"Error al guardar el pago: {str(e)}")
-    
-    def limpiar_formulario(self):
-        """Limpiar formulario de checkout"""
-        self.entry_nombre.delete(0, tk.END)
-        self.entry_email.delete(0, tk.END)
-        self.entry_tarjeta.delete(0, tk.END)
-        self.entry_cvv.delete(0, tk.END)
-        self.entry_fecha.delete(0, tk.END)
-    
-    def procesar_checkout_completo(self):
-        """Procesar checkout completo usando la clase Checkout"""
-        if self.carrito.esta_vacio():
-            messagebox.showwarning("Advertencia", "El carrito está vacío")
-            return
-        
-        try:
-            from Cliente import Cliente
-            from Checkout import Checkout
-            from TarjetaCredito import TarjetaCredito
-            
-            # Usar cliente autenticado o crear uno temporal
+            # ✅ INFORMACIÓN DEL USUARIO
             if self.cliente_autenticado:
-                cliente = self.cliente_autenticado
+                usuario_text = f"👤 {self.cliente_autenticado.nombre}"
             else:
-                # Validar campos para usuario invitado
-                if not self.entry_nombre.get() or not self.entry_email.get():
-                    messagebox.showerror("Error", "Por favor complete todos los campos del cliente")
-                    return
-                
-                # Crear cliente temporal
-                cliente = Cliente(
-                    id_cliente="invitado",
-                    nombre=self.entry_nombre.get(),
-                    email=self.entry_email.get(),
-                    carrito=self.carrito,
-                    telefono=""
-                )
+                usuario_text = "👤 Usuario Invitado"
             
-            # Crear tarjeta de crédito si se proporciona
-            tarjeta = None
-            if self.entry_tarjeta.get() and self.entry_cvv.get() and self.entry_fecha.get():
-                from datetime import datetime
-                try:
-                    fecha_exp = datetime.strptime(self.entry_fecha.get(), "%m/%y").date()
-                    tarjeta = TarjetaCredito(
-                        numero=self.entry_tarjeta.get(),
-                        titular=self.entry_nombre.get(),
-                        fecha_expiracion=fecha_exp,
-                        cvv=self.entry_cvv.get()
-                    )
-                except ValueError:
-                    messagebox.showerror("Error", "Formato de fecha inválido. Use MM/YY")
-                    return
-            
-            # Crear checkout
-            checkout = Checkout(self.carrito, cliente, tarjeta)
-            
-            # Procesar checkout
-            metodo_pago = "Tarjeta de Crédito" if tarjeta else "Efectivo"
-            direccion_envio = "Dirección predeterminada"  # Se podría agregar un campo para esto
-            
-            checkout.procesar_checkout(direccion_envio, metodo_pago)
-            
-            # Agregar orden al historial del cliente
-            cliente.agregar_orden(checkout.orden)
-            
-            # Agregar orden a la pila
-            self.pila_ordenes.push(checkout.orden)
-            
-            # Crear y agregar pago a la cola
-            pago = Pago(
-                id_pago=len(self.cola_pagos.obtener_elementos()) + 1,
-                monto=checkout.total,
-                metodo=metodo_pago,
-                cliente=cliente.nombre,
-                fecha=datetime.now()
+            usuario_label = ctk.CTkLabel(
+                user_frame,
+                text=usuario_text,
+                font=("Arial", 14, "bold"),
+                text_color="white"
             )
-            self.cola_pagos.enqueue(pago)
+            usuario_label.pack(side="left", padx=(0, 15))
             
-            # Guardar pago en CSV
-            self.guardar_pago_csv(pago)
+            # ✅ BOTÓN VER ESTRUCTURAS
+            self.btn_estructuras = ctk.CTkButton(
+                user_frame,
+                text="📊 Estructuras",
+                command=self.mostrar_estructuras,
+                width=110,
+                height=35,
+                font=("Arial", 12, "bold"),
+                fg_color="#8b5cf6",
+                hover_color="#7c3aed",
+                corner_radius=15
+            )
+            self.btn_estructuras.pack(side="left", padx=5)
             
-            # Actualizar visualizaciones
-            self.actualizar_carrito()
-            self.actualizar_visualizaciones()
+            # ✅ BOTÓN LOGOUT
+            self.btn_logout = ctk.CTkButton(
+                user_frame,
+                text="🚪 Cerrar Sesión",
+                command=self.logout,
+                width=120,
+                height=35,
+                font=("Arial", 12, "bold"),
+                fg_color="#dc2626",
+                hover_color="#b91c1c",
+                corner_radius=15
+            )
+            self.btn_logout.pack(side="left", padx=(10, 0))
             
-            messagebox.showinfo("Éxito", f"Checkout completado exitosamente. Total: ${checkout.total:.2f}")
+            print("✅ Panel de usuario creado con botones de Estructuras y Logout")
             
         except Exception as e:
-            messagebox.showerror("Error", f"Error durante el checkout: {str(e)}")
+            print(f"❌ Error creando panel usuario: {e}")
+            traceback.print_exc()
     
-    def cerrar_sesion(self):
-        """Cerrar la sesión actual y volver al login."""
-        if self.sistema_login:
-            self.sistema_login.cerrar_sesion()
-        
-        # Limpiar datos de la sesión
-        self.cliente_autenticado = None
-        self.carrito.vaciar()
-        
-        messagebox.showinfo("Sesión Cerrada", "Sesión cerrada exitosamente")
-        
-        # Cerrar ventana actual
-        self.root.destroy()
-        
-        # Mostrar login nuevamente
-        iniciar_aplicacion_con_login()
-    
-    def cerrar_aplicacion(self):
-        """Manejar el cierre de la aplicación."""
-        if self.sistema_login and self.sistema_login.esta_autenticado():
-            if messagebox.askyesno("Cerrar", "¿Está seguro de que desea cerrar la aplicación?"):
-                self.sistema_login.cerrar_sesion()
-                self.root.destroy()
-        else:
-            self.root.destroy()
-    
-    def rellenar_campos_cliente(self):
-        """Rellena los campos del formulario con datos del cliente autenticado."""
-        if hasattr(self, 'entry_nombre') and self.cliente_autenticado:
-            self.entry_nombre.delete(0, tk.END)
-            self.entry_nombre.insert(0, self.cliente_autenticado.nombre)
+    def limpiar_contenedor(self):
+        """Limpiar contenedor principal"""
+        try:
+            print("🧹 Contenedor principal limpiado")
             
-            self.entry_email.delete(0, tk.END)
-            self.entry_email.insert(0, self.cliente_autenticado.email)
-            
-            # Deshabilitar campos para usuarios autenticados
-            self.entry_nombre.config(state='readonly')
-            self.entry_email.config(state='readonly')
-
-def callback_login_exitoso(cliente, sistema_login):
-    """Callback ejecutado cuando el login es exitoso."""
-    print(f"✅ Login exitoso: {cliente.nombre}")
-    print(f"📧 Email: {cliente.email}")
+            if hasattr(self, 'contenedor_principal') and self.contenedor_principal.winfo_exists():
+                for widget in self.contenedor_principal.winfo_children():
+                    try:
+                        widget.destroy()
+                    except Exception as e:
+                        print(f"⚠️ Warning destruyendo widget: {e}")
+                        
+            # ✅ LIMPIAR REFERENCIAS DE INTERFACES
+            self.interfaz_compras = None
+            self.interfaz_carrito = None
+            self.interfaz_checkout = None
+            self.interfaz_historial = None
+                        
+        except Exception as e:
+            print(f"❌ Error limpiando contenedor: {e}")
     
-    # Crear nueva ventana principal
-    root = tk.Tk()
-    app = SistemaCompras(root, cliente, sistema_login)
-    root.mainloop()
-
-def iniciar_aplicacion_con_login():
-    """Inicia la aplicación mostrando primero el login."""
-    try:
-        # Mostrar login
-        cliente = mostrar_login(callback_login_exitoso)
-        
-        if not cliente:
-            # Usuario canceló el login
-            print("❌ Login cancelado")
-            return
+    def limpiar_recursos(self):
+        """Limpiar todos los recursos antes de cerrar"""
+        try:
+            print("🧹 Limpiando recursos...")
             
-    except Exception as e:
-        print(f"Error en el sistema de login: {str(e)}")
-        return
+            # ✅ LIMPIAR INTERFACES ESPECÍFICAS DE MANERA SEGURA
+            interfaces_a_limpiar = [
+                ('interfaz_compras', 'InterfazCompras'),
+                ('interfaz_carrito', 'InterfazCarrito'), 
+                ('interfaz_checkout', 'InterfazCheckout'),
+                ('interfaz_historial', 'InterfazHistorial')
+            ]
+            
+            for attr_name, interface_name in interfaces_a_limpiar:
+                if hasattr(self, attr_name):
+                    try:
+                        interfaz = getattr(self, attr_name)
+                        if interfaz and hasattr(interfaz, 'winfo_exists') and interfaz.winfo_exists():
+                            interfaz.destroy()
+                            print(f"✅ {interface_name} limpiada")
+                        setattr(self, attr_name, None)
+                    except Exception as e:
+                        print(f"⚠️ Warning limpiando {interface_name}: {e}")
+            
+            # Limpiar contenedor
+            self.limpiar_contenedor()
+            
+            print("✅ Recursos limpiados exitosamente")
+            
+        except Exception as e:
+            print(f"❌ Error limpiando recursos: {e}")
+    
+    def actualizar_botones_navegacion(self, vista_activa):
+        """✅ MEJORADO: Actualizar estado visual de botones de navegación con historial"""
+        try:
+            # Resetear colores
+            self.btn_compras.configure(fg_color="#3b82f6")
+            self.btn_carrito.configure(fg_color="#059669")
+            if hasattr(self, 'btn_historial'):
+                self.btn_historial.configure(fg_color="#f59e0b")
+            self.btn_checkout.configure(fg_color="#7c3aed")
+            
+            # Activar botón correspondiente
+            if vista_activa == "compras":
+                self.btn_compras.configure(fg_color="#1d4ed8")
+            elif vista_activa == "carrito":
+                self.btn_carrito.configure(fg_color="#047857")
+            elif vista_activa == "historial" and hasattr(self, 'btn_historial'):
+                self.btn_historial.configure(fg_color="#d97706")
+            elif vista_activa == "checkout":
+                self.btn_checkout.configure(fg_color="#6d28d9")
+                
+        except Exception as e:
+            print(f"❌ Error actualizando botones de navegación: {e}")
+    
+    def mostrar_compras(self):
+        """✅ MÉTODO ACTUALIZADO: Mostrar interfaz de compras con callbacks mejorados"""
+        try:
+            self.vista_actual = "compras"
+            self.limpiar_contenedor()
+            self.actualizar_botones_navegacion("compras")
+            
+            print("🛍️ Iniciando carga de vista de compras...")
+            
+            # Crear interfaz de compras
+            self.interfaz_compras = InterfazCompras(
+                self.contenedor_principal,
+                self.sistema.inventario,
+                self.sistema.carrito
+            )
+            self.interfaz_compras.pack(fill="both", expand=True)
+            
+            # ✅ CONFIGURAR CALLBACK PERSONALIZADO MEJORADO
+            def on_producto_agregado_callback(producto, cantidad):
+                try:
+                    print(f"🔄 Callback: Producto agregado - {cantidad}x {producto.nombre}")
+                    print(f"📊 Estado del carrito después de agregar:")
+                    print(f"   - Items totales: {self.sistema.carrito.obtener_cantidad_items()}")
+                    print(f"   - Total precio: ${self.sistema.carrito.calcular_total():.2f}")
+                    
+                    # Actualizar contador del carrito
+                    self.actualizar_contador_carrito()
+                    
+                    # Si la vista del carrito está activa, actualizarla
+                    if self.vista_actual == "carrito" and self.interfaz_carrito:
+                        print("🔄 Actualizando vista del carrito...")
+                        self.interfaz_carrito.actualizar_carrito()
+                    
+                    # Mostrar notificación
+                    self.mostrar_notificacion(
+                        f"✅ {cantidad}x {producto.nombre} agregado al carrito",
+                        tipo="success",
+                        duracion=2000
+                    )
+                    
+                except Exception as e:
+                    print(f"❌ Error en callback producto agregado: {e}")
+                    import traceback
+                    traceback.print_exc()
+            
+            # ✅ CONFIGURAR CALLBACK EN LA INTERFAZ DE COMPRAS
+            if hasattr(self.interfaz_compras, 'set_callback_producto_agregado'):
+                self.interfaz_compras.set_callback_producto_agregado(on_producto_agregado_callback)
+                print("🔗 Callback de producto agregado configurado exitosamente")
+            else:
+                print("⚠️ La interfaz de compras no tiene método set_callback_producto_agregado")
+            
+            # Establecer referencia para otros callbacks
+            self.interfaz_compras.master = self
+            
+            # Actualizar contador del carrito
+            self.actualizar_contador_carrito()
+            
+            print("🛍️ Vista de compras cargada exitosamente")
+            
+        except Exception as e:
+            print(f"❌ Error mostrando compras: {e}")
+            traceback.print_exc()
+            self.mostrar_error("Error cargando productos")
+    
+    def mostrar_carrito(self):
+        """✅ MÉTODO ACTUALIZADO: Mostrar interfaz del carrito con debugging"""
+        try:
+            self.vista_actual = "carrito"
+            self.limpiar_contenedor()
+            self.actualizar_botones_navegacion("carrito")
+            
+            print("🛒 Iniciando carga de vista del carrito...")
+            print(f"📊 Estado actual del carrito:")
+            print(f"   - Items: {self.sistema.carrito.obtener_cantidad_items()}")
+            print(f"   - Total: ${self.sistema.carrito.calcular_total():.2f}")
+            print(f"   - Items agrupados: {len(self.sistema.carrito.obtener_items_agrupados())}")
+            
+            # Crear interfaz del carrito
+            self.interfaz_carrito = InterfazCarrito(
+                self.contenedor_principal, 
+                self.sistema.carrito
+            )
+            self.interfaz_carrito.pack(fill="both", expand=True)
+            
+            # ✅ ESTABLECER REFERENCIA PARA CALLBACKS
+            self.interfaz_carrito.master = self
+            
+            print("🛒 Vista de carrito cargada exitosamente")
+            
+        except Exception as e:
+            print(f"❌ Error mostrando carrito: {e}")
+            traceback.print_exc()
+            self.mostrar_error("Error cargando carrito")
+    
+    def mostrar_historial(self):
+        """✅ NUEVO: Mostrar interfaz de historial de compras"""
+        try:
+            self.vista_actual = "historial"
+            self.limpiar_contenedor()
+            self.actualizar_botones_navegacion("historial")
+            
+            print("📋 Iniciando carga de vista de historial...")
+            
+            # ✅ CREAR INTERFAZ DE HISTORIAL MEJORADA
+            historial_frame = ctk.CTkFrame(self.contenedor_principal, fg_color="#ffffff")
+            historial_frame.pack(fill="both", expand=True, padx=20, pady=20)
+            
+            # Header del historial
+            header_frame = ctk.CTkFrame(historial_frame, fg_color="#f8fafc", height=100)
+            header_frame.pack(fill="x", padx=20, pady=(20, 10))
+            header_frame.pack_propagate(False)
+            
+            # Título principal
+            titulo = ctk.CTkLabel(
+                header_frame,
+                text="📋 Historial de Compras",
+                font=("Arial Black", 28),
+                text_color="#1f2937"
+            )
+            titulo.pack(pady=(20, 5))
+            
+            # Subtítulo con información del usuario
+            if self.cliente_autenticado:
+                subtitulo = f"Historial de compras para {self.cliente_autenticado.nombre}"
+            else:
+                subtitulo = "Historial de compras - Usuario Invitado"
+            
+            subtitulo_label = ctk.CTkLabel(
+                header_frame,
+                text=subtitulo,
+                font=("Arial", 14),
+                text_color="#6b7280"
+            )
+            subtitulo_label.pack()
+            
+            # ✅ CONTENIDO PRINCIPAL DEL HISTORIAL
+            contenido_frame = ctk.CTkFrame(historial_frame, fg_color="#ffffff")
+            contenido_frame.pack(fill="both", expand=True, padx=20, pady=10)
+            
+            # ✅ SIMULAR DATOS DE HISTORIAL (PLACEHOLDER)
+            self.crear_historial_simulado(contenido_frame)
+            
+            # ✅ PANEL DE ACCIONES
+            acciones_frame = ctk.CTkFrame(historial_frame, fg_color="#f8fafc", height=80)
+            acciones_frame.pack(fill="x", padx=20, pady=(10, 20))
+            acciones_frame.pack_propagate(False)
+            
+            # Botones de acción
+            btn_frame = ctk.CTkFrame(acciones_frame, fg_color="transparent")
+            btn_frame.pack(expand=True, pady=20)
+            
+            btn_actualizar = ctk.CTkButton(
+                btn_frame,
+                text="🔄 Actualizar",
+                command=self.actualizar_historial,
+                font=("Arial", 14, "bold"),
+                fg_color="#3b82f6",
+                hover_color="#2563eb",
+                width=140,
+                height=40
+            )
+            btn_actualizar.pack(side="left", padx=10)
+            
+            btn_exportar = ctk.CTkButton(
+                btn_frame,
+                text="📄 Exportar PDF",
+                command=self.exportar_historial,
+                font=("Arial", 14, "bold"),
+                fg_color="#059669",
+                hover_color="#047857",
+                width=140,
+                height=40
+            )
+            btn_exportar.pack(side="left", padx=10)
+            
+            btn_volver = ctk.CTkButton(
+                btn_frame,
+                text="🔙 Volver a Tienda",
+                command=self.mostrar_compras,
+                font=("Arial", 14, "bold"),
+                fg_color="#f59e0b",
+                hover_color="#d97706",
+                width=140,
+                height=40
+            )
+            btn_volver.pack(side="left", padx=10)
+            
+            print("📋 Vista de historial cargada exitosamente")
+            
+        except Exception as e:
+            print(f"❌ Error mostrando historial: {e}")
+            traceback.print_exc()
+            self.mostrar_error("Error cargando historial")
+    
+    def crear_historial_simulado(self, parent):
+        """✅ CREAR HISTORIAL SIMULADO PARA DEMOSTRACIÓN"""
+        try:
+            # Scroll frame para el historial
+            scroll_frame = ctk.CTkScrollableFrame(
+                parent,
+                label_text="📦 Órdenes Recientes",
+                label_font=("Arial Bold", 16)
+            )
+            scroll_frame.pack(fill="both", expand=True, padx=10, pady=10)
+            
+            # ✅ SIMULAR ÓRDENES DE EJEMPLO
+            ordenes_ejemplo = [
+                {
+                    "id": "ORD-2024-001",
+                    "fecha": "2024-01-15",
+                    "productos": ["Laptop Gaming", "Mouse Gamer"],
+                    "total": 1299.99,
+                    "estado": "Entregado"
+                },
+                {
+                    "id": "ORD-2024-002", 
+                    "fecha": "2024-01-20",
+                    "productos": ["Audífonos Bluetooth", "Cargador USB-C"],
+                    "total": 89.99,
+                    "estado": "En Tránsito"
+                },
+                {
+                    "id": "ORD-2024-003",
+                    "fecha": "2024-01-25", 
+                    "productos": ["Smartphone", "Funda Protectora"],
+                    "total": 699.99,
+                    "estado": "Procesando"
+                }
+            ]
+            
+            # ✅ CREAR CARDS PARA CADA ORDEN
+            for orden in ordenes_ejemplo:
+                self.crear_card_orden(scroll_frame, orden)
+            
+            # ✅ MENSAJE INFORMATIVO
+            info_frame = ctk.CTkFrame(scroll_frame, fg_color="#e0f2fe")
+            info_frame.pack(fill="x", pady=20)
+            
+            info_label = ctk.CTkLabel(
+                info_frame,
+                text="ℹ️ Este es un historial de demostración.\nEn la versión completa, aquí aparecerían tus compras reales.",
+                font=("Arial", 12),
+                text_color="#0369a1",
+                justify="center"
+            )
+            info_label.pack(pady=15)
+            
+        except Exception as e:
+            print(f"❌ Error creando historial simulado: {e}")
+    
+    def crear_card_orden(self, parent, orden):
+        """✅ CREAR CARD INDIVIDUAL PARA UNA ORDEN"""
+        try:
+            # Determinar color según estado
+            colores_estado = {
+                "Entregado": "#10b981",
+                "En Tránsito": "#f59e0b", 
+                "Procesando": "#3b82f6",
+                "Cancelado": "#ef4444"
+            }
+            
+            color_estado = colores_estado.get(orden["estado"], "#6b7280")
+            
+            # Frame principal de la orden
+            orden_frame = ctk.CTkFrame(parent, fg_color="#ffffff", border_width=2, border_color="#e5e7eb")
+            orden_frame.pack(fill="x", pady=10, padx=5)
+            
+            # ✅ HEADER DE LA ORDEN
+            header_frame = ctk.CTkFrame(orden_frame, fg_color="#f9fafb")
+            header_frame.pack(fill="x", padx=15, pady=(15, 5))
+            
+            # ID y fecha
+            id_label = ctk.CTkLabel(
+                header_frame,
+                text=f"📋 Orden: {orden['id']}",
+                font=("Arial Bold", 14),
+                text_color="#1f2937"
+            )
+            id_label.pack(side="left")
+            
+            fecha_label = ctk.CTkLabel(
+                header_frame,
+                text=f"📅 {orden['fecha']}",
+                font=("Arial", 12),
+                text_color="#6b7280"
+            )
+            fecha_label.pack(side="right")
+            
+            # ✅ CONTENIDO DE LA ORDEN
+            contenido_frame = ctk.CTkFrame(orden_frame, fg_color="transparent")
+            contenido_frame.pack(fill="x", padx=15, pady=5)
+            contenido_frame.grid_columnconfigure((0, 1, 2), weight=1)
+            
+            # Productos
+            productos_text = "\n".join([f"• {prod}" for prod in orden["productos"]])
+            productos_label = ctk.CTkLabel(
+                contenido_frame,
+                text=f"📦 Productos:\n{productos_text}",
+                font=("Arial", 11),
+                text_color="#374151",
+                justify="left"
+            )
+            productos_label.grid(row=0, column=0, sticky="w", padx=10, pady=5)
+            
+            # Total
+            total_label = ctk.CTkLabel(
+                contenido_frame,
+                text=f"💰 Total:\n${orden['total']:.2f}",
+                font=("Arial Bold", 13),
+                text_color="#059669"
+            )
+            total_label.grid(row=0, column=1, padx=10, pady=5)
+            
+            # Estado
+            estado_frame = ctk.CTkFrame(contenido_frame, fg_color=color_estado, corner_radius=15)
+            estado_frame.grid(row=0, column=2, padx=10, pady=5, sticky="e")
+            
+            estado_label = ctk.CTkLabel(
+                estado_frame,
+                text=f"📊 {orden['estado']}",
+                font=("Arial Bold", 11),
+                text_color="white"
+            )
+            estado_label.pack(padx=15, pady=8)
+            
+            # ✅ BOTONES DE ACCIÓN
+            acciones_frame = ctk.CTkFrame(orden_frame, fg_color="transparent")
+            acciones_frame.pack(fill="x", padx=15, pady=(5, 15))
+            
+            btn_detalles = ctk.CTkButton(
+                acciones_frame,
+                text="👁️ Ver Detalles",
+                command=lambda: self.ver_detalles_orden(orden),
+                font=("Arial", 10),
+                fg_color="#6b7280",
+                hover_color="#4b5563",
+                width=100,
+                height=30
+            )
+            btn_detalles.pack(side="left", padx=5)
+            
+            if orden["estado"] == "Entregado":
+                btn_factura = ctk.CTkButton(
+                    acciones_frame,
+                    text="📄 Factura",
+                    command=lambda: self.descargar_factura(orden),
+                    font=("Arial", 10),
+                    fg_color="#3b82f6",
+                    hover_color="#2563eb",
+                    width=100,
+                    height=30
+                )
+                btn_factura.pack(side="left", padx=5)
+            
+        except Exception as e:
+            print(f"❌ Error creando card de orden: {e}")
+    
+    def actualizar_historial(self):
+        """✅ ACTUALIZAR HISTORIAL"""
+        print("🔄 Actualizando historial...")
+        self.mostrar_notificacion("🔄 Historial actualizado", tipo="info")
+    
+    def exportar_historial(self):
+        """✅ EXPORTAR HISTORIAL A PDF"""
+        print("📄 Exportando historial...")
+        self.mostrar_notificacion("📄 Historial exportado exitosamente", tipo="success")
+    
+    def ver_detalles_orden(self, orden):
+        """✅ VER DETALLES DE UNA ORDEN"""
+        print(f"👁️ Viendo detalles de orden {orden['id']}")
+        self.mostrar_notificacion(f"👁️ Mostrando detalles de {orden['id']}", tipo="info")
+    
+    def descargar_factura(self, orden):
+        """✅ DESCARGAR FACTURA"""
+        print(f"📄 Descargando factura de orden {orden['id']}")
+        self.mostrar_notificacion(f"📄 Factura descargada: {orden['id']}", tipo="success")
+    
+    def mostrar_estructuras(self):
+        """✅ MÉTODO CORREGIDO: Mostrar visualizador de estructuras de datos"""
+        try:
+            print("📊 Abriendo visualizador de estructuras...")
+            
+            # ✅ VERIFICAR QUE LAS ESTRUCTURAS EXISTAN
+            if not hasattr(self.sistema, 'pila_ordenes') or self.sistema.pila_ordenes is None:
+                self.sistema.pila_ordenes = Pila()
+                print("🔧 Pila de órdenes inicializada")
+            
+            if not hasattr(self.sistema, 'cola_pagos') or self.sistema.cola_pagos is None:
+                self.sistema.cola_pagos = Cola()
+                print("🔧 Cola de pagos inicializada")
+            
+            # ✅ CREAR VENTANA DE ESTRUCTURAS
+            ventana_estructuras = mostrar_visualizador_estructuras(self.sistema)
+            
+            if ventana_estructuras:
+                print("✅ Visualizador de estructuras abierto exitosamente")
+                
+                # ✅ CONFIGURAR VENTANA COMO MODAL
+                ventana_estructuras.transient(self)  # Asociar con ventana principal
+                ventana_estructuras.grab_set()  # Hacer modal
+                
+                # ✅ CONFIGURAR CIERRE APROPIADO
+                def on_close():
+                    try:
+                        ventana_estructuras.grab_release()  # Liberar modal
+                        ventana_estructuras.destroy()
+                        print("🚪 Visualizador de estructuras cerrado")
+                    except Exception as e:
+                        print(f"⚠️ Error cerrando estructuras: {e}")
+                
+                ventana_estructuras.protocol("WM_DELETE_WINDOW", on_close)
+                
+                # ✅ LOG DE LA ACCIÓN
+                self.mostrar_notificacion(
+                    "📊 Visualizador de estructuras abierto",
+                    tipo="info",
+                    duracion=2000
+                )
+                
+                # ✅ CENTRAR VENTANA MEJOR
+                ventana_estructuras.focus_set()
+                
+            else:
+                self.mostrar_error("Error abriendo visualizador de estructuras")
+                
+        except ImportError as e:
+            print(f"❌ Error importando InterfazEstructuras: {e}")
+            self.mostrar_error("Módulo de estructuras no disponible")
+        except Exception as e:
+            print(f"❌ Error mostrando estructuras: {e}")
+            traceback.print_exc()
+            self.mostrar_error("Error abriendo visualizador de estructuras")
+    
+    def mostrar_checkout(self):
+        """✅ MÉTODO ACTUALIZADO: Mostrar interfaz de checkout con validaciones"""
+        try:
+            # Verificar si hay productos en el carrito
+            cantidad_items = self.sistema.carrito.obtener_cantidad_items()
+            if cantidad_items == 0:
+                self.mostrar_error("El carrito está vacío. Agrega productos antes de hacer checkout.")
+                return
+            
+            self.vista_actual = "checkout"
+            self.limpiar_contenedor()
+            self.actualizar_botones_navegacion("checkout")
+            
+            print(f"💳 Iniciando checkout con {cantidad_items} items...")
+            
+            self.interfaz_checkout = InterfazCheckout(
+                self.contenedor_principal, 
+                self.sistema
+            )
+            self.interfaz_checkout.pack(fill="both", expand=True)
+            
+            # ✅ CONFIGURAR CALLBACK PARA COMPLETAR CHECKOUT
+            def on_checkout_complete():
+                try:
+                    print("✅ Checkout completado, actualizando interfaz...")
+                    
+                    # Actualizar contador del carrito
+                    self.actualizar_contador_carrito()
+                    
+                    # Actualizar carrito si está visible
+                    if self.vista_actual == "carrito" and self.interfaz_carrito:
+                        self.interfaz_carrito.actualizar_carrito()
+                    
+                    # Mostrar notificación de éxito
+                    self.mostrar_notificacion(
+                        "🎉 ¡Compra realizada exitosamente!",
+                        tipo="success",
+                        duracion=3000
+                    )
+                    
+                    # Redirigir a compras después de un delay
+                    self.after(2000, self.mostrar_compras)
+                    
+                except Exception as e:
+                    print(f"❌ Error en callback checkout: {e}")
+            
+            # Configurar callback si está disponible
+            if hasattr(self.interfaz_checkout, 'set_callback'):
+                self.interfaz_checkout.set_callback(on_checkout_complete)
+                
+            print("💳 Vista de checkout cargada exitosamente")
+            
+        except Exception as e:
+            print(f"❌ Error mostrando checkout: {e}")
+            traceback.print_exc()
+            self.mostrar_error("Error cargando checkout")
+            self.mostrar_compras()  # Fallback a compras
+    
+    def actualizar_contador_carrito(self):
+        """✅ MÉTODO ACTUALIZADO: Actualizar contador de productos en el carrito"""
+        try:
+            if hasattr(self, 'btn_carrito') and self.btn_carrito.winfo_exists():
+                cantidad = self.sistema.carrito.obtener_cantidad_items()
+                
+                print(f"🔄 Actualizando contador carrito: {cantidad} items")
+                
+                if cantidad > 0:
+                    texto_carrito = f"🛒 Mi Carrito ({cantidad})"
+                    # Cambiar color para indicar que hay productos
+                    if self.vista_actual != "carrito":
+                        self.btn_carrito.configure(
+                            text=texto_carrito,
+                            fg_color="#059669"
+                        )
+                    else:
+                        self.btn_carrito.configure(text=texto_carrito)
+                        
+                    # ✅ HABILITAR BOTÓN DE CHECKOUT SI HAY PRODUCTOS
+                    if hasattr(self, 'btn_checkout'):
+                        self.btn_checkout.configure(state="normal")
+                        
+                else:
+                    texto_carrito = "🛒 Mi Carrito"
+                    if self.vista_actual != "carrito":
+                        self.btn_carrito.configure(
+                            text=texto_carrito,
+                            fg_color="#6b7280"  # Gris cuando está vacío
+                        )
+                    else:
+                        self.btn_carrito.configure(text=texto_carrito)
+                        
+                    # ✅ DESHABILITAR BOTÓN DE CHECKOUT SI NO HAY PRODUCTOS
+                    if hasattr(self, 'btn_checkout'):
+                        self.btn_checkout.configure(state="disabled", fg_color="#9ca3af")
+                
+        except Exception as e:
+            print(f"❌ Error actualizando contador carrito: {e}")
+            try:
+                if hasattr(self, 'btn_carrito'):
+                    self.btn_carrito.configure(text="🛒 Mi Carrito")
+            except:
+                pass
+    
+    def mostrar_notificacion(self, mensaje, tipo="success", duracion=3000):
+        """✅ MÉTODO MEJORADO: Mostrar notificación temporal"""
+        try:
+            # Colores según el tipo
+            colores = {
+                "success": "#10b981",
+                "warning": "#f59e0b", 
+                "error": "#ef4444",
+                "info": "#3b82f6"
+            }
+            
+            iconos = {
+                "success": "✅",
+                "warning": "⚠️",
+                "error": "❌", 
+                "info": "ℹ️"
+            }
+            
+            # Crear frame de notificación
+            notif_frame = ctk.CTkFrame(
+                self,
+                fg_color=colores.get(tipo, "#3b82f6"),
+                corner_radius=10
+            )
+            
+            # Posicionar en la esquina superior derecha
+            notif_frame.place(relx=0.95, rely=0.15, anchor="ne")
+            
+            # Mensaje
+            mensaje_label = ctk.CTkLabel(
+                notif_frame,
+                text=f"{iconos.get(tipo, 'ℹ️')} {mensaje}",
+                font=("Arial", 12, "bold"),
+                text_color="white"
+            )
+            mensaje_label.pack(padx=15, pady=8)
+            
+            # ✅ ANIMACIÓN DE ENTRADA
+            def animar_entrada():
+                try:
+                    # Efecto de fade-in
+                    notif_frame.lift()
+                except:
+                    pass
+            
+            self.after(50, animar_entrada)
+            
+            # ✅ AUTO DESTRUIR DESPUÉS DE LA DURACIÓN ESPECIFICADA
+            def destruir_notificacion():
+                try:
+                    if notif_frame.winfo_exists():
+                        notif_frame.destroy()
+                except:
+                    pass
+            
+            self.after(duracion, destruir_notificacion)
+            
+        except Exception as e:
+            print(f"❌ Error mostrando notificación: {e}")
+    
+    def mostrar_error(self, mensaje):
+        """Mostrar mensaje de error en el contenedor principal"""
+        try:
+            self.limpiar_contenedor()
+            
+            error_frame = ctk.CTkFrame(self.contenedor_principal, fg_color="#fee2e2")
+            error_frame.pack(fill="both", expand=True, padx=50, pady=100)
+            
+            error_label = ctk.CTkLabel(
+                error_frame,
+                text=f"❌ {mensaje}",
+                font=("Arial", 18, "bold"),
+                text_color="#dc2626"
+            )
+            error_label.pack(pady=50)
+            
+            retry_btn = ctk.CTkButton(
+                error_frame,
+                text="🔄 Reintentar",
+                command=self.mostrar_compras,
+                font=("Arial", 14, "bold"),
+                fg_color="#3b82f6",
+                hover_color="#2563eb"
+            )
+            retry_btn.pack(pady=20)
+            
+        except Exception as e:
+            print(f"❌ Error mostrando error: {e}")
+    
+    def mostrar_error_critico(self, mensaje):
+        """Mostrar error crítico y cerrar aplicación"""
+        print(f"💥 Error crítico: {mensaje}")
+        # Aquí podrías mostrar una ventana de error antes de cerrar
+        self.quit()
+    
+    def logout(self):
+        """Cerrar sesión y volver al login"""
+        try:
+            print("🚪 Iniciando proceso de logout...")
+            print(f"📊 Estado actual: vista={self.vista_actual}")
+            
+            # Limpiar recursos antes de cerrar
+            try:
+                self.limpiar_recursos()
+            except Exception as e:
+                print(f"⚠️ Warning limpiando recursos: {e}")
+            
+            # Destruir la ventana actual
+            print("🗑️ Destruyendo ventana principal...")
+            self.destroy()
+            
+            # Pequeña pausa para asegurar limpieza
+            import time
+            time.sleep(0.2)
+            print("⏱️ Pausa de limpieza completada")
+            
+            # Función callback para el nuevo login
+            def reiniciar_aplicacion(cliente, sistema_login):
+                try:
+                    print(f"🔄 Reiniciando aplicación para {cliente.nombre}")
+                    configurar_dpi_awareness()
+                    
+                    # Crear nueva instancia de la aplicación
+                    print("🆕 Creando nueva instancia de aplicación...")
+                    nueva_app = AplicacionPrincipal(cliente_autenticado=cliente)
+                    print("▶️ Iniciando mainloop...")
+                    nueva_app.mainloop()
+                    
+                except Exception as e:
+                    print(f"❌ Error reiniciando aplicación: {e}")
+                    traceback.print_exc()
+            
+            # Mostrar login con callback
+            print("🔐 Mostrando pantalla de login...")
+            mostrar_login(reiniciar_aplicacion)
+            
+            print("🏁 Proceso de logout completado")
+                
+        except Exception as e:
+            print(f"❌ Error crítico en logout: {e}")
+            traceback.print_exc()
+            # En caso de error crítico, salir
+            print("💥 Saliendo por error crítico...")
+            sys.exit(1)
+    
+    def on_closing(self):
+        """Manejar cierre de ventana"""
+        try:
+            print("👋 Cerrando aplicación...")
+            
+            # Limpiar recursos
+            try:
+                self.limpiar_recursos()
+            except Exception as e:
+                print(f"⚠️ Warning limpiando recursos en cierre: {e}")
+            
+            # Destruir ventana
+            self.destroy()
+            
+            # Salir del programa completamente
+            print("🏁 Aplicación cerrada exitosamente")
+            sys.exit(0)
+            
+        except Exception as e:
+            print(f"❌ Error cerrando aplicación: {e}")
+            self.quit()
+            sys.exit(1)
 
 def main():
-    """Función principal que inicia con login."""
-    iniciar_aplicacion_con_login()
+    """Función principal"""
+    print("🚀 Iniciando Sistema de E-commerce...")
+    
+    def iniciar_aplicacion(cliente, sistema_login):
+        """Callback para iniciar aplicación tras login exitoso"""
+        try:
+            print(f"🎉 Bienvenido, {cliente.nombre}!")
+            configurar_dpi_awareness()
+            
+            app = AplicacionPrincipal(cliente_autenticado=cliente)
+            app.mainloop()
+            
+        except Exception as e:
+            print(f"❌ Error iniciando aplicación: {e}")
+            traceback.print_exc()
+    
+    try:
+        # Intentar mostrar login
+        cliente = mostrar_login(iniciar_aplicacion)
+        
+    except Exception as e:
+        print(f"⚠️ Error con el sistema de login: {e}")
+        traceback.print_exc()
+        
+        # Modo invitado como fallback
+        print("🔄 Iniciando en modo invitado...")
+        try:
+            configurar_dpi_awareness()
+            app = AplicacionPrincipal()
+            app.mainloop()
+        except Exception as fallback_error:
+            print(f"💥 Error crítico en modo invitado: {fallback_error}")
+            traceback.print_exc()
+            sys.exit(1)
 
 if __name__ == "__main__":
     main()

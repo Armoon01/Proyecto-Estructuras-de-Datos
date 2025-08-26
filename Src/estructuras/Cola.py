@@ -1,4 +1,23 @@
 class Cola:
+    """
+    Implementación de Cola (Queue) usando lista de Python
+    
+    Análisis de Complejidad Temporal:
+    - enqueue(elemento): O(1) amortizado
+    - dequeue(): O(n) debido a pop(0) - NOTA: Ineficiente para listas grandes
+    - front(): O(1)
+    - esta_vacia(): O(1)
+    - obtener_tamaño(): O(1)
+    
+    Análisis de Complejidad Espacial: O(n) donde n es el número de elementos
+    
+    Notación Asintótica:
+    - Mejor caso: O(1) para enqueue, front, esta_vacia, obtener_tamaño
+    - Caso promedio: O(n) para dequeue debido a reestructuración de lista
+    - Peor caso: O(n) para dequeue
+    
+    OPTIMIZACIÓN POSIBLE: Usar collections.deque para O(1) en ambos extremos
+    """
     def __init__(self):
         self.elementos = []
     

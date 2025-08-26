@@ -1,0 +1,2 @@
+transaccion_id,orden_id,pago_id,fecha,cliente_id,total,metodo_pago,estado,productos_cantidad
+TXN-D3DAF891,ORD-637484BF,PAY-3D529860,2025-08-26 15:22:51,Erick,4640.0,Tarjeta de Crédito,Completada,1
