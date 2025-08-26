@@ -14,7 +14,13 @@ class Producto:
              raise ValueError("ID del producto no puede estar vacío")
 
         if not nombre:
-            raise ValueError("Nombre del cliente no puede estar vacío")
+            raise ValueError("Nombre del producto no puede estar vacío")
+        
+        if precio < 0:
+            raise ValueError("El precio no puede ser negativo")
+            
+        if stock < 0:
+            raise ValueError("El stock no puede ser negativo")
         
         self.id_producto = id_producto
         self.nombre = nombre
@@ -28,7 +34,20 @@ class Producto:
     def actualizar_precio(self,precio):
         self.precio = precio
 
-    def reducir_stock(self,cantidad):
+    def reducir_stock(self, cantidad):
+        """
+        Reduce el stock del producto.
+        
+        Args:
+            cantidad (int): Cantidad a reducir
+            
+        Raises:
+            ValueError: Si la cantidad es mayor al stock disponible
+        """
+        if cantidad < 0:
+            raise ValueError("La cantidad no puede ser negativa")
+        if self.stock < cantidad:
+            raise ValueError(f"Stock insuficiente. Disponible: {self.stock}, solicitado: {cantidad}")
         self.stock = self.stock - cantidad
 
     def getIdProducto(self):
