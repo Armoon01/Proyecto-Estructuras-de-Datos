@@ -30,5 +30,13 @@ class Pila:
         """Obtener lista de elementos para visualización"""
         return self.elementos.copy()
     
+    def obtener_todas(self):
+        """Obtener todos los elementos (alias para compatibilidad)"""
+        return self.elementos.copy()
+    
+    def tamanio(self):
+        """Obtener tamaño de la pila (alias para compatibilidad)"""
+        return len(self.elementos)
+    
     def __str__(self):
         return f"Pila: {self.elementos}"

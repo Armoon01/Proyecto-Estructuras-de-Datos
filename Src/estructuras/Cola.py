@@ -30,5 +30,13 @@ class Cola:
         """Obtener lista de elementos para visualización"""
         return self.elementos.copy()
     
+    def obtener_todos(self):
+        """Obtener todos los elementos (alias para compatibilidad)"""
+        return self.elementos.copy()
+    
+    def tamanio(self):
+        """Obtener tamaño de la cola (alias para compatibilidad)"""
+        return len(self.elementos)
+    
     def __str__(self):
         return f"Cola: {self.elementos}"

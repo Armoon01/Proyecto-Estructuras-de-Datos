@@ -67,5 +67,10 @@ class Lista:
             actual = actual.siguiente
         return elementos
     
+    def limpiar(self):
+        """Limpiar la lista"""
+        self.cabeza = None
+        self.tamaño = 0
+        
     def __str__(self):
         return f"Lista: {self.obtener_elementos()}"
