@@ -289,8 +289,9 @@ class SistemaCompras:
         try:
             from Cliente import Cliente
             
-            # Crear un cliente temporal para mostrar historial
-            # En una aplicación real, buscaríamos el cliente en una base de datos
+            
+            # En una aplicación real, buscaríamos el cliente en una base de datos pero por ahora vamos a sacar el historial de pagos de pagos.csv
+            # unicamente muestra el historial del cliente que esta logueado
             cliente_temp = Cliente(
                 id_cliente="temp",
                 nombre=self.entry_nombre.get(),
@@ -299,69 +300,82 @@ class SistemaCompras:
                 telefono=""
             )
             
-            # Simular órdenes del historial (en una app real, se cargarían de la BD)
-            # Por ahora, mostraremos las órdenes de la pila actual
-            ordenes_historial = self.pila_ordenes.obtener_elementos()
-            
-            # Crear ventana de historial
+           
             ventana_historial = tk.Toplevel(self.root)
-            ventana_historial.title(f"Historial de Órdenes - {cliente_temp.nombre}")
+            ventana_historial.title(f"Historial de Pagos - {cliente_temp.nombre}")
             ventana_historial.geometry("800x600")
             ventana_historial.transient(self.root)
             ventana_historial.grab_set()
             
-            # Información del cliente
+           
             info_frame = ttk.LabelFrame(ventana_historial, text="Información del Cliente", padding="10")
             info_frame.pack(fill=tk.X, padx=10, pady=5)
             
             ttk.Label(info_frame, text=f"Nombre: {cliente_temp.nombre}").pack(anchor=tk.W)
             ttk.Label(info_frame, text=f"Email: {cliente_temp.email}").pack(anchor=tk.W)
-            ttk.Label(info_frame, text=f"Total de órdenes: {len(ordenes_historial)}").pack(anchor=tk.W)
             
-            # Lista de órdenes
-            ordenes_frame = ttk.LabelFrame(ventana_historial, text="Historial de Órdenes", padding="10")
-            ordenes_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
             
-            # Treeview para órdenes
-            columns = ('Orden', 'Fecha', 'Estado', 'Total', 'Items')
-            tree_ordenes = ttk.Treeview(ordenes_frame, columns=columns, show='headings', height=15)
+            pagos_frame = ttk.LabelFrame(ventana_historial, text="Historial de Pagos", padding="10")
+            pagos_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
             
+            
+            columns = ('ID', 'Fecha', 'Cliente', 'Email', 'Monto', 'Método', 'Tarjeta', 'Estado')
+            tree_pagos = ttk.Treeview(pagos_frame, columns=columns, show='headings', height=15)
             for col in columns:
-                tree_ordenes.heading(col, text=col)
-                tree_ordenes.column(col, width=120)
+                tree_pagos.heading(col, text=col)
+                tree_pagos.column(col, width=110)
+            tree_pagos.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
             
-            tree_ordenes.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
             
-            # Scrollbar
-            scrollbar_ordenes = ttk.Scrollbar(ordenes_frame, orient=tk.VERTICAL, command=tree_ordenes.yview)
-            scrollbar_ordenes.pack(side=tk.RIGHT, fill=tk.Y)
-            tree_ordenes.configure(yscrollcommand=scrollbar_ordenes.set)
+            scrollbar_pagos = ttk.Scrollbar(pagos_frame, orient=tk.VERTICAL, command=tree_pagos.yview)
+            scrollbar_pagos.pack(side=tk.RIGHT, fill=tk.Y)
+            tree_pagos.configure(yscrollcommand=scrollbar_pagos.set)
             
-            # Llenar con órdenes
-            if ordenes_historial:
-                total_gastado = 0
-                for orden in ordenes_historial:
-                    items_count = len(orden.productos) if hasattr(orden, 'productos') else 0
-                    tree_ordenes.insert('', 'end', values=(
-                        f"#{orden.id}",
-                        orden.fecha.strftime('%Y-%m-%d %H:%M') if hasattr(orden, 'fecha') else 'N/A',
-                        orden.estado if hasattr(orden, 'estado') else 'Pendiente',
-                        f"${orden.total:.2f}" if hasattr(orden, 'total') else '$0.00',
-                        items_count
-                    ))
-                    if hasattr(orden, 'total'):
-                        total_gastado += orden.total
-                
-                # Resumen
-                resumen_frame = ttk.Frame(ventana_historial)
-                resumen_frame.pack(fill=tk.X, padx=10, pady=5)
-                
-                ttk.Label(resumen_frame, text=f"Total gastado: ${total_gastado:.2f}", 
-                         font=('Arial', 12, 'bold')).pack(anchor=tk.W)
-            else:
-                tree_ordenes.insert('', 'end', values=("Sin órdenes", "", "", "", ""))
             
-            # Botón cerrar
+            total_pagado = 0.0
+            num_pagos = 0
+            try:
+                data_path = os.path.join(os.path.dirname(current_dir), 'Data', 'pagos.csv')
+                if os.path.exists(data_path):
+                    with open(data_path, 'r', newline='', encoding='utf-8') as f:
+                        reader = csv.reader(f)
+                        for row in reader:
+                            if not row:
+                                continue
+                            
+                            if len(row) < 5:
+                                continue
+                            id_pago = row[0] if len(row) > 0 else ''
+                            fecha = row[1] if len(row) > 1 else ''
+                            cliente_csv = row[2] if len(row) > 2 else ''
+                            email_csv = row[3] if len(row) > 3 else ''
+                            monto_csv = row[4] if len(row) > 4 else '0'
+                            metodo = row[5] if len(row) > 5 else ''
+                            tarjeta = row[6] if len(row) > 6 else ''
+                            estado = row[7] if len(row) > 7 else ''
+                            
+                            
+                            if ((email_csv.strip().lower() == cliente_temp.email.strip().lower()) or 
+                                (cliente_csv.strip().lower() == cliente_temp.nombre.strip().lower())):
+                                tree_pagos.insert('', 'end', values=(
+                                    id_pago, fecha, cliente_csv, email_csv, f"${float(monto_csv):.2f}", metodo, tarjeta, estado
+                                ))
+                                num_pagos += 1
+                                try:
+                                    total_pagado += float(monto_csv)
+                                except ValueError:
+                                    pass
+                else:
+                    messagebox.showinfo("Información", "No existe el archivo pagos.csv en la carpeta Data")
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo leer pagos.csv: {str(e)}")
+            
+            
+            resumen_frame = ttk.Frame(ventana_historial)
+            resumen_frame.pack(fill=tk.X, padx=10, pady=5)
+            ttk.Label(resumen_frame, text=f"Pagos encontrados: {num_pagos}", font=('Arial', 12, 'bold')).pack(anchor=tk.W)
+            ttk.Label(resumen_frame, text=f"Total pagado: ${total_pagado:.2f}", font=('Arial', 12, 'bold')).pack(anchor=tk.W)
+            
             ttk.Button(ventana_historial, text="Cerrar", 
                       command=ventana_historial.destroy).pack(pady=10)
                       
@@ -516,7 +530,7 @@ class SistemaCompras:
         # Buscar producto
         producto = None
         for p in self.lista_productos:
-            if p.getIdProducto() == producto_id:
+            if str(p.getIdProducto()) == str(producto_id):
                 producto = p
                 break
         
