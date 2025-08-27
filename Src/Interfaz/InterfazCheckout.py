@@ -803,8 +803,8 @@ class InterfazCheckout(ctk.CTkFrame):
             import csv
             import os
             
-            # Ruta del archivo de órdenes
-            ordenes_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Data', 'ordenes.csv')
+            # Ruta del archivo de órdenes (CORREGIDA: 3 niveles arriba desde Src/Interfaz/)
+            ordenes_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'Data', 'ordenes.csv')
             
             # Crear directorio si no existe
             os.makedirs(os.path.dirname(ordenes_file), exist_ok=True)
@@ -848,8 +848,8 @@ class InterfazCheckout(ctk.CTkFrame):
             import csv
             import os
             
-            # Ruta del archivo de pagos
-            pagos_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Data', 'pagos.csv')
+            # Ruta del archivo de pagos (CORREGIDA: 3 niveles arriba desde Src/Interfaz/)
+            pagos_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'Data', 'pagos.csv')
             
             # Crear directorio si no existe
             os.makedirs(os.path.dirname(pagos_file), exist_ok=True)
@@ -880,8 +880,8 @@ class InterfazCheckout(ctk.CTkFrame):
             import csv
             import os
             
-            # Ruta del archivo de transacciones
-            transacciones_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Data', 'transacciones.csv')
+            # Ruta del archivo de transacciones (CORREGIDA: 3 niveles arriba desde Src/Interfaz/)
+            transacciones_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'Data', 'transacciones.csv')
             
             # Crear directorio si no existe
             os.makedirs(os.path.dirname(transacciones_file), exist_ok=True)

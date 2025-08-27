@@ -1,2 +1,0 @@
-id,fecha,cliente_id,titular_tarjeta,metodo_pago,subtotal,impuestos,total,estado,cantidad_productos
-ORD-637484BF,2025-08-26 15:22:51,Erick,andy,Tarjeta de Crédito,4000.0,640.0,4640.0,Pagado,1
