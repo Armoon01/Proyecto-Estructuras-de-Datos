@@ -1,7 +1,7 @@
 id_producto,nombre,precio,descripcion,stock,imagen_ruta
 1,Aceite Roland Especial Sésamo,4000.0,Aceite especial de sésamo Roland - 185ml,7,Src\Images\productos\aceite_sesamo.png
 2,Frijoles La Costeña Charros,1820.0,Frijoles charros en lata - 560g,22,Src\Images\productos\frijoles_charros.png
-3,Chop Suey Yigui,1900.0,Chop suey presentación mediano bolsa - 425g,11,Src\Images\productos\chop_suey.png
+3,Chop Suey Yigui,1900.0,Chop suey presentación mediano bolsa - 425g,12,Src\Images\productos\chop_suey.png
 4,Chiles Jalapeños Malher,610.0,Chiles jalapeños Malher Trocitos Lata - 156g,29,Src\Images\productos\chiles_jalapenos.png
 5,Laptop HP,899.99,Laptop HP 15 pulgadas,9,Src\Images\productos\producto_default.png
 6,Mouse Inalámbrico,25.5,Mouse inalámbrico Logitech,49,Src\Images\productos\producto_default.png

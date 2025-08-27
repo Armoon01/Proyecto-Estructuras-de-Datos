@@ -1,10 +1,11 @@
-email,password,nombre,telefono,fecha_registro,ultimo_login
-juan@email.com,nueva123,Juan Pérez,555-0101,2025-08-14 10:32:13,2025-08-14 10:37:03
-maria@test.com,pass123,María García,555-0202,2025-08-14 10:38:28,2025-08-14 10:38:28
-carlos@email.com,carlos456,Carlos López,555-0303,2025-08-14 10:38:28,2025-08-14 10:38:28
-ana@correo.com,ana789,Ana Martínez,555-0404,2025-08-14 10:38:28,
+email,password,nombre,fecha_registro,ultimo_login
+juan@email.com,nueva123,Juan Pérez,2025-08-14 10:32:13,2025-08-14 10:37:03
+maria@test.com,pass123,María García,2025-08-14 10:38:28,2025-08-14 10:38:28
+carlos@email.com,carlos456,Carlos López,2025-08-14 10:38:28,2025-08-14 10:38:28
+ana@correo.com,ana789,Ana Martínez,2025-08-14 10:38:28,
 test@universidad.edu,ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f,Usuario Test,2025-08-25T09:23:27.262679,2025-08-25T09:23:27.280901
 maria.rodriguez@universidad.edu,2e63a1090735f47213fea3b974418e3e42437325f313b3d3d2f6238cc22298f9,María José Rodríguez,2025-08-25T09:32:43.774315,2025-08-25T09:32:43.792524
 simple_1756136153@test.com,dc16faf6b852e1c14e363d3ff1da32b7f755edb9d0b2dfa0bf9dbb154dfcd4e5,Usuario Simplificado,2025-08-25T09:35:53.337047,2025-08-25T09:35:53.340334
 simple_1756136222@test.com,dc16faf6b852e1c14e363d3ff1da32b7f755edb9d0b2dfa0bf9dbb154dfcd4e5,Usuario Simplificado,2025-08-25T09:37:02.914674,2025-08-25T09:37:02.919814
-erick@gmail.com,8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92,Erick,2025-08-25T09:53:57.819548,
+erick@gmail.com,8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92,Erick,2025-08-25T09:53:57.819548,2025-08-26T15:22:19.816846
+jean@universidad.edu,4f5304d0a069388f5057c385b23b2514353c17db255d26397165fb2ba5873f7f,Jean,2025-08-27T11:04:38.774154,

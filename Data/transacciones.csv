@@ -1,0 +1,2 @@
+transaccion_id,orden_id,pago_id,fecha,cliente_id,total,metodo_pago,estado,productos_cantidad
+TXN-9641CD42,ORD-491AB077,PAY-367E65D6,2025-08-27 11:13:44,Jean,10736.3684,Tarjeta de Crédito,Completada,6

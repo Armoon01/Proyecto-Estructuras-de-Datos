@@ -10,3 +10,4 @@ id_orden,fecha_pedido,cliente,email_cliente,telefono_cliente,metodo_pago,product
 1,2025-08-25 08:15:01,,Laptop HP,12,899.99,10799.880000000001,13349.880000000001
 1,2025-08-25 08:15:01,,Mouse Inalámbrico,100,25.5,2550.0,13349.880000000001
 1,2025-08-25 08:47:37,Andy,Laptop HP,1,899.99,899.99,899.99
+ORD-491AB077,2025-08-27 11:13:44,Jean,Jean XYZ CBA,Tarjeta de Crédito,9255.49,1480.8784,10736.3684,Pagado,6
