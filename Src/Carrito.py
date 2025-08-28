@@ -10,6 +10,8 @@ class ItemCarrito:
     def __str__(self):
         return f"{self.producto.nombre} (x{self.cantidad})"
 
+from estructuras.Lista import Lista
+
 class Carrito:
     """
     Carrito de compras mejorado
@@ -22,7 +24,7 @@ class Carrito:
     
     def __init__(self, cliente_id="invitado"):
         self.cliente_id = cliente_id
-        self.productos = []  # Lista de productos individuales
+        self.productos = Lista()  # Lista de productos individuales
         self.items = {}  # Diccionario de items agrupados {producto_id: ItemCarrito}
         self.fecha_creacion = datetime.now()
         print(f"🛒 Carrito creado para cliente: {cliente_id}")
@@ -108,7 +110,7 @@ class Carrito:
             
             # Agregar a lista de productos individuales (para compatibilidad)
             for _ in range(cantidad):
-                self.productos.append(producto)
+                self.productos.agregar(producto)
             
             # Agregar o actualizar en items agrupados
             if producto_id in self.items:
@@ -151,7 +153,7 @@ class Carrito:
                         contador += 1
                         # No agregar a la nueva lista
                     else:
-                        nuevos_productos.append(p)
+                        nuevos_productos.agregar(p)
                 
                 self.productos = nuevos_productos
                 

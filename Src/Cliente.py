@@ -3,6 +3,7 @@ Clase Cliente simplificada para el sistema de e-commerce universitario.
 """
 from Carrito import Carrito
 from Producto import Producto
+from estructuras.Lista import Lista
 
 class Cliente:
     """Clase para representar clientes del sistema."""
@@ -35,7 +36,7 @@ class Cliente:
         self.activo = True
         self.carrito = carrito
         # Nueva funcionalidad: Lista de órdenes del cliente
-        self.ordenes = []  # Lista para almacenar el historial de órdenes
+        self.ordenes = Lista()  # Lista para almacenar el historial de órdenes
     
     def agregar_orden(self, orden):
         """
@@ -49,7 +50,7 @@ class Cliente:
         """
         try:
             if orden and hasattr(orden, 'id'):
-                self.ordenes.append(orden)
+                self.ordenes.agregar(orden)
                 return True
             return False
         except Exception:
@@ -89,7 +90,7 @@ class Cliente:
         ordenes_activas = []
         for orden in self.ordenes:
             if hasattr(orden, 'estado') and orden.estado in ['Pendiente', 'Procesando', 'Enviado']:
-                ordenes_activas.append(orden)
+                ordenes_activas.agregar(orden)
         return ordenes_activas
     
     def obtener_total_gastado(self):
