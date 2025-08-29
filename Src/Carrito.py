@@ -256,3 +256,16 @@ class Carrito:
     
     def __len__(self):
         return self.obtener_cantidad_items()
+    
+    def pago_Carrito(self, metodo_pago):
+        """Procesar el pago del carrito"""
+        if self.esta_vacio():
+            print("❌ El carrito está vacío")
+            return False
+
+        total = self.calcular_total()
+        print(f"💳 Procesando pago de ${total:.2f} para el carrito")
+        if metodo_pago.procesar_pago(total):
+            self.limpiar()
+            return True
+        return False

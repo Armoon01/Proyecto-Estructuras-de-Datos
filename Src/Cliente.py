@@ -9,7 +9,7 @@ class Cliente:
     """Clase para representar clientes del sistema."""
     
     #def __init__(self, id_cliente, nombre, email, telefono="", carrito):
-    def __init__(self, id_cliente, nombre, email, carrito, telefono=""):
+    def __init__(self, id_cliente, nombre, email, carrito, tarjeta, telefono=""):
         """
         Inicializa un cliente.
         
@@ -37,6 +37,7 @@ class Cliente:
         self.carrito = carrito
         # Nueva funcionalidad: Lista de órdenes del cliente
         self.ordenes = Lista()  # Lista para almacenar el historial de órdenes
+        self.metodo_pago = tarjeta  # Tarjeta de crédito asociada al cliente
     
     def agregar_orden(self, orden):
         """
@@ -195,6 +196,7 @@ class Cliente:
         Returns:
             bool: True si se vació correctamente
         """
+        # En lugar de productos encargarse de limpiar deberia ser el carrito.
         if self.carrito:
             self.carrito.productos.limpiar()
             return True
@@ -228,6 +230,13 @@ class Cliente:
             str: Teléfono del cliente
         """
         return self.telefono
+    def get_metodo_pago(self):
+        """
+        Obtiene el método de pago del cliente.
+        Returns:
+            obj: Tarjeta de Credito
+        """
+        return self.metodo_pago
     def set_telefono(self, telefono):
         """
         Actualiza el teléfono del cliente.
@@ -271,6 +280,14 @@ class Cliente:
             self.id_cliente = id_cliente
         else:
             raise ValueError("ID del cliente no puede estar vacío")
+    def set_metodo_pago(self, tarjeta):
+        """
+        Actualiza el método de pago del cliente.
+
+        Args:
+            tarjeta (TarjetaCredito): Nueva tarjeta de crédito
+        """
+        self.metodo_pago = tarjeta
 
     def desactivar(self):
         """Desactiva el cliente."""
@@ -291,6 +308,7 @@ class Cliente:
         Returns:
             dict: Información del cliente
         """
+        # Deberia implementarse un metodo de confirmacion de que no haya objetos vacios antes de mandar la informacion
         return {
             'id': self.id_cliente,
             'nombre': self.nombre,
@@ -299,7 +317,8 @@ class Cliente:
             'activo': self.activo,
             'total_ordenes': self.contar_ordenes(),
             'total_gastado': self.obtener_total_gastado(),
-            'ordenes_activas': len(self.obtener_ordenes_activas())
+            'ordenes_activas': len(self.obtener_ordenes_activas()),
+            'metodo_pago': self.metodo_pago.get_numero()
         }
     
     def __repr__(self):
