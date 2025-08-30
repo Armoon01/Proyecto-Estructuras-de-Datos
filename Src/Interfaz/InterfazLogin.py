@@ -182,28 +182,111 @@ class LoginApp(CTk):
         CTkLabel(master=self.frame, text="  Email:", text_color="#601E88", anchor="w", justify="left", font=("Arial Bold", 14), image=self.email_icon, compound="left").pack(anchor="w", pady=(38, 0), padx=(40, 0))
         self.email_entry = CTkEntry(master=self.frame, width=350, fg_color="#EEEEEE", border_color="#601E88", border_width=1, text_color="#000000", placeholder_text="usuario@universidad.edu")
         self.email_entry.pack(anchor="w", padx=(40, 0))
-        
-        # Password
-        CTkLabel(master=self.frame, text="  Password:", text_color="#601E88", anchor="w", justify="left", font=("Arial Bold", 14), image=self.password_icon, compound="left").pack(anchor="w", pady=(21, 0), padx=(40, 0))
+
+        # Contraseña
+        CTkLabel(master=self.frame, text="  Contraseña:", text_color="#601E88", anchor="w", justify="left", font=("Arial Bold", 14), image=self.password_icon, compound="left").pack(anchor="w", pady=(21, 0), padx=(40, 0))
         self.password_entry = CTkEntry(master=self.frame, width=350, fg_color="#EEEEEE", border_color="#601E88", border_width=1, text_color="#000000", show="*", placeholder_text="Contraseña")
         self.password_entry.pack(anchor="w", padx=(40, 0))
         
         # Botón Iniciar Sesión
         self.login_btn = CTkButton(master=self.frame, text="Iniciar Sesión", fg_color="#601E88", hover_color="#E44982", font=("Arial Bold", 12), text_color="#ffffff", width=350, command=self.procesar_login)
         self.login_btn.pack(anchor="w", pady=(40, 0), padx=(40, 0))
-        
+
+        # Botón Cambiar Contraseña
+        CTkButton(master=self.frame, text="Cambiar Contraseña", fg_color="transparent", hover_color="#F0F0F0", font=("Arial Bold", 10), text_color="#E44982", width=350, command=self.mostrar_cambio_contrasena).pack(anchor="w", pady=(8, 0), padx=(40, 0))
+
         # Botón Registro
         CTkButton(master=self.frame, text="Crear Nueva Cuenta", fg_color="transparent", hover_color="#F0F0F0", font=("Arial Bold", 11), text_color="#601E88", width=350, command=self.mostrar_registro).pack(anchor="w", pady=(10, 0), padx=(40, 0))
-        
+
         # Información del admin
         CTkLabel(master=self.frame, text="Admin: admin@universidad.edu / admin123", text_color="#999999", font=("Arial", 8)).pack(pady=(15, 0), padx=(40, 0))
-        
+
         # Eventos de teclado
         self.email_entry.bind('<Return>', lambda e: self.password_entry.focus())
         self.password_entry.bind('<Return>', lambda e: self.procesar_login())
-        
+
         # Focus inicial
         self.email_entry.focus()
+
+    def mostrar_cambio_contrasena(self):
+        """Muestra la interfaz para cambiar la contraseña."""
+        self.limpiar_interfaz()
+
+        main_frame = CTkFrame(master=self, fg_color="#ffffff")
+        main_frame.pack(fill="both", expand=True)
+
+        left_frame = CTkFrame(master=main_frame, fg_color="transparent")
+        left_frame.pack(side="left", fill="both", expand=True)
+        CTkLabel(master=left_frame, text="", image=self.side_img).pack(expand=True)
+
+        self.frame = CTkFrame(master=main_frame, width=450, height=580, fg_color="#ffffff")
+        self.frame.pack_propagate(0)
+        self.frame.pack(side="right", padx=(0, 30), pady=0)
+
+        CTkLabel(master=self.frame, text="Restablecer Contraseña", text_color="#601E88", anchor="w", justify="left", font=("Arial Bold", 22)).pack(anchor="w", pady=(25, 5), padx=(40, 0))
+        CTkLabel(master=self.frame, text="Ingrese los datos para cambiar su contraseña", text_color="#7E7E7E", anchor="w", justify="left", font=("Arial Bold", 12)).pack(anchor="w", padx=(40, 0))
+
+        # Email
+        CTkLabel(master=self.frame, text="  Email:", text_color="#601E88", anchor="w", justify="left", font=("Arial Bold", 12), image=self.email_icon, compound="left").pack(anchor="w", pady=(20, 5), padx=(40, 0))
+        self.cambio_email_entry = CTkEntry(master=self.frame, width=350, fg_color="#EEEEEE", border_color="#601E88", border_width=1, text_color="#000000", placeholder_text="usuario@universidad.edu")
+        self.cambio_email_entry.pack(anchor="w", padx=(40, 0))
+
+        # Contraseña actual
+        CTkLabel(master=self.frame, text="  Contraseña actual:", text_color="#601E88", anchor="w", justify="left", font=("Arial Bold", 12), image=self.password_icon, compound="left").pack(anchor="w", pady=(12, 5), padx=(40, 0))
+        self.cambio_actual_entry = CTkEntry(master=self.frame, width=350, fg_color="#EEEEEE", border_color="#601E88", border_width=1, text_color="#000000", show="*", placeholder_text="Contraseña actual")
+        self.cambio_actual_entry.pack(anchor="w", padx=(40, 0))
+
+        # Nueva contraseña
+        CTkLabel(master=self.frame, text="  Nueva contraseña:", text_color="#601E88", anchor="w", justify="left", font=("Arial Bold", 12), image=self.password_icon, compound="left").pack(anchor="w", pady=(12, 5), padx=(40, 0))
+        self.cambio_nueva_entry = CTkEntry(master=self.frame, width=350, fg_color="#EEEEEE", border_color="#601E88", border_width=1, text_color="#000000", show="*", placeholder_text="Nueva contraseña")
+        self.cambio_nueva_entry.pack(anchor="w", padx=(40, 0))
+
+        # Confirmar nueva contraseña
+        CTkLabel(master=self.frame, text="  Confirmar nueva contraseña:", text_color="#601E88", anchor="w", justify="left", font=("Arial Bold", 12), image=self.password_icon, compound="left").pack(anchor="w", pady=(12, 5), padx=(40, 0))
+        self.cambio_confirmar_entry = CTkEntry(master=self.frame, width=350, fg_color="#EEEEEE", border_color="#601E88", border_width=1, text_color="#000000", show="*", placeholder_text="Confirmar nueva contraseña")
+        self.cambio_confirmar_entry.pack(anchor="w", padx=(40, 0))
+
+        # Botón Cambiar
+        CTkButton(master=self.frame, text="Cambiar Contraseña", fg_color="#601E88", hover_color="#E44982", font=("Arial Bold", 12), text_color="#ffffff", width=350, command=self.procesar_cambio_contrasena).pack(anchor="w", pady=(20, 0), padx=(40, 0))
+
+        # Botón Volver
+        CTkButton(master=self.frame, text="← Volver al Login", fg_color="transparent", hover_color="#F0F0F0", font=("Arial Bold", 10), text_color="#601E88", width=350, command=self.mostrar_login).pack(anchor="w", pady=(8, 0), padx=(40, 0))
+
+        self.cambio_email_entry.focus()
+
+    def procesar_cambio_contrasena(self):
+        """Procesa el cambio de contraseña desde la interfaz."""
+        email = self.cambio_email_entry.get().strip()
+        actual = self.cambio_actual_entry.get()
+        nueva = self.cambio_nueva_entry.get()
+        confirmar = self.cambio_confirmar_entry.get()
+
+        if not all([email, actual, nueva, confirmar]):
+            messagebox.showerror("❌ Error", "Por favor complete todos los campos")
+            return
+        if nueva != confirmar:
+            messagebox.showerror("❌ Error", "Las nuevas contraseñas no coinciden")
+            return
+        if len(nueva) < 6:
+            messagebox.showerror("❌ Error", "La nueva contraseña debe tener al menos 6 caracteres")
+            return
+
+        # Buscar id_usuario por email
+        id_usuario = None
+        for user in self.sistema_login.usuarios_db.values():
+            if user['email'] == email:
+                id_usuario = user['id_usuario']
+                break
+        if not id_usuario:
+            messagebox.showerror("❌ Error", "Usuario no encontrado")
+            return
+
+        exito, mensaje = self.sistema_login.cambiar_password(id_usuario, actual, nueva)
+        if exito:
+            messagebox.showinfo("✅ Contraseña cambiada", "¡Contraseña actualizada exitosamente!")
+            self.mostrar_login()
+        else:
+            messagebox.showerror("❌ Error", mensaje)
     
     def mostrar_registro(self):
         """Muestra la interfaz de registro."""

@@ -239,6 +239,7 @@ class SistemaLogin:
             nombre=usuario_data['nombre'],
             email=usuario_data['email'],
             carrito=carrito_usuario,
+            tarjeta=usuario_data.get('tarjeta', None),
             telefono=usuario_data.get('telefono', '')
         )
         self.usuario_actual = cliente
