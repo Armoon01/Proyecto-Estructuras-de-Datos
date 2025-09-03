@@ -1,4 +1,5 @@
 from datetime import datetime
+from TarjetaCredito import TarjetaCredito
 
 class ItemCarrito:
     """Representa un item en el carrito con cantidad"""
@@ -258,14 +259,17 @@ class Carrito:
         return self.obtener_cantidad_items()
     
     def pago_Carrito(self, metodo_pago):
-        """Procesar el pago del carrito"""
+        if not isinstance(metodo_pago, TarjetaCredito):
+            print("Método de pago no soportado")
+            return False
+        
         if self.esta_vacio():
-            print("❌ El carrito está vacío")
+            print("El carrito está vacío")
             return False
 
         total = self.calcular_total()
         print(f"💳 Procesando pago de ${total:.2f} para el carrito")
-        if metodo_pago.procesar_pago(total):
+        if metodo_pago.autorizar_pago(total):
             self.limpiar()
             return True
         return False

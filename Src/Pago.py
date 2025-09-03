@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from TarjetaCredito import TarjetaCredito
 class Pago:
 
 
@@ -11,9 +11,14 @@ class Pago:
         self.fecha = fecha
         self.metodo = metodo
 
-    def procesar_pago(self, metodo):
+    def procesar_pago(self, metodo_pago):
+        if isinstance(metodo_pago, TarjetaCredito):
+            if not metodo_pago:
+                raise ValueError("No se proporcionó una tarjeta de crédito")
+            if not metodo_pago.autorizar_pago(self.monto):
+                raise ValueError("El pago fue rechazado por la entidad bancaria")
         self.estado = "Completado"
-        self.metodo = metodo
+        self.metodo = metodo_pago
 
     def consultar_estado(self):
         return self.estado

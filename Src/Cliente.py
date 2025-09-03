@@ -4,6 +4,7 @@ Clase Cliente simplificada para el sistema de e-commerce universitario.
 from Carrito import Carrito
 from Producto import Producto
 from estructuras.Lista import Lista
+from TarjetaCredito import TarjetaCredito
 
 class Cliente:
     """Clase para representar clientes del sistema."""
@@ -28,6 +29,8 @@ class Cliente:
             raise ValueError("Nombre del cliente no puede estar vacío")
         if not email or "@" not in email:
             raise ValueError("Email debe ser válido")
+        if not isinstance(tarjeta, TarjetaCredito):
+            raise ValueError("Se debe proporcionar una tarjeta de crédito válida")
         
         self.id_cliente = id_cliente
         self.nombre = nombre

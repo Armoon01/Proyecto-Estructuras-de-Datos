@@ -31,3 +31,6 @@ class TarjetaCredito:
 
         self.fondo -= monto
         return True
+    
+    def get_numero(self):
+        return self.numero
