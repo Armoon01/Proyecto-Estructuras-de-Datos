@@ -696,6 +696,16 @@ class InterfazCheckout(ctk.CTkFrame):
                 }
             )
 
+            # Reducir stock de los productos comprados
+            try:
+                for item in productos:
+                    if hasattr(item, 'producto') and hasattr(item, 'cantidad'):
+                        item.producto.reducir_stock(item.cantidad)
+            except Exception as e:
+                print(f"Error reduciendo stock: {e}")
+            # Guardar productos actualizados en archivo CSV
+            if hasattr(self.sistema, 'inventario'):
+                self.sistema.inventario.guardar_productos()
             # Limpiar carrito
             self.carrito.limpiar() if hasattr(self.carrito, 'limpiar') else None
             if hasattr(self, 'master') and hasattr(self.master, 'actualizar_contador_carrito'):

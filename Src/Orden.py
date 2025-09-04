@@ -1,4 +1,3 @@
-from Recibo import Recibo
 class Orden:
 
     def __init__(self, id_orden, fecha_compra, productos, recibo, fecha_entrega, fecha_envio, total):
@@ -12,6 +11,7 @@ class Orden:
         self.total = total
 
     def generar_recibo(self):
+        from .Recibo import Recibo  # Importación local para evitar dependencias circulares
         self.recibo = Recibo(self)
         return self.recibo
 

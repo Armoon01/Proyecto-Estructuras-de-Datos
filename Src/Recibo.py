@@ -1,6 +1,38 @@
 from datetime import datetime
 
 class Recibo:
+    @classmethod
+    def generar_desde_carrito(cls, id_recibo, cliente, carrito):
+        """
+        Genera un recibo a partir de un cliente y su carrito de compras.
+        Args:
+            id_recibo (str): ID único del recibo
+            cliente: objeto cliente
+            carrito: objeto carrito
+        Returns:
+            Recibo: instancia de Recibo
+        """
+        productos = carrito.obtener_items_agrupados() if hasattr(carrito, 'obtener_items_agrupados') else []
+        subtotal = sum(item.producto.precio * item.cantidad for item in productos if hasattr(item, 'producto'))
+        from .Orden import Orden
+        orden = Orden(
+            id_orden=id_recibo.replace('REC', 'ORD'),
+            fecha_compra=datetime.now(),
+            productos=productos,
+            recibo=None,
+            fecha_entrega=None,
+            fecha_envio=None,
+            total=subtotal
+        )
+        recibo = cls(orden)
+        recibo.id_recibo = id_recibo
+        recibo.cliente = cliente
+        recibo.productos = productos
+        recibo.monto_total = subtotal
+        recibo.fecha_emision = orden.fecha
+        recibo.estado = "Pagado"
+        return recibo
+    
     def __init__(self, orden):
         self.orden = orden  # Guardamos referencia a la orden
 
