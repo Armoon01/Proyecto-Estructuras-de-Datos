@@ -59,10 +59,15 @@ class Checkout:
             else:  # Es un Producto directamente
                 item.reducir_stock(item.stock)
     
-    def crear_recibo(self):
-        self.orden.generar_recibo()
-        pass
+def crear_recibo(self):
+    recibo = recibo.generar_desde_carrito(
+        id_recibo=f"R-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+        cliente=self.cliente,
+        carrito=self.carrito,
+        metodo_pago=None
+    )
+    self.orden.recibo = recibo
+    return recibo
 
-    def vaciar_carrito(self):
-        self.carrito.vaciar_carrito()
-    
+def vaciar_carrito(self):
+    self.carrito.vaciar_carrito()
