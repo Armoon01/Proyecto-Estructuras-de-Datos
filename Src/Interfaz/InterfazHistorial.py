@@ -210,10 +210,11 @@ class InterfazHistorial(ctk.CTkFrame):
         frame_info.grid(row=0, column=0, columnspan=3, sticky="ew", padx=15, pady=10)
         frame_info.grid_columnconfigure(1, weight=1)
         
-        # ID de orden
+        # ID de orden (manejar si no existe)
+        orden_id = getattr(orden, 'id', 'N/A')
         ctk.CTkLabel(
             frame_info,
-            text=f"🏷️ Orden #{orden.id}",
+            text=f"🏷️ Orden #{orden_id}",
             font=("Arial Bold", 16),
             text_color=("#1f2937", "#f9fafb")
         ).grid(row=0, column=0, sticky="w")

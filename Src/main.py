@@ -534,14 +534,41 @@ class AplicacionPrincipal(ctk.CTk):
                 email = getattr(self.cliente_autenticado, 'email', '') if self.cliente_autenticado else ''
                 historial_widget = InterfazHistorial(contenido_frame, self.sistema, nombre, email)
                 historial_widget.pack(fill="both", expand=True)
+                # PANEL DE ACCIONES SOLO SI NO HAY ERROR
+                acciones_frame = ctk.CTkFrame(historial_frame, fg_color="#f8fafc", height=80)
+                acciones_frame.pack(fill="x", padx=20, pady=(10, 20))
+                acciones_frame.pack_propagate(False)
+                # Botones de acción
+                btn_frame = ctk.CTkFrame(acciones_frame, fg_color="transparent")
+                btn_frame.pack(expand=True, pady=20)
+                btn_actualizar = ctk.CTkButton(
+                    btn_frame,
+                    text="Actualizar",
+                    command=self.actualizar_historial,
+                    font=("Arial", 14, "bold"),
+                    fg_color="#3b82f6",
+                    hover_color="#2563eb",
+                    width=140,
+                    height=40
+                )
+                btn_actualizar.pack(side="left", padx=10)
+                btn_exportar = ctk.CTkButton(
+                    btn_frame,
+                    text="Exportar PDF",
+                    command=self.exportar_historial,
+                    font=("Arial", 14, "bold"),
+                    fg_color="#059669",
+                    hover_color="#047857",
+                    width=140,
+                    height=40
+                )
+                btn_exportar.pack(side="left", padx=10)
             except Exception as e:
                 print(f"Error importando o creando InterfazHistorial: {e}")
                 self.mostrar_error("Error cargando historial")
-            
-            # PANEL DE ACCIONES
-            acciones_frame = ctk.CTkFrame(historial_frame, fg_color="#f8fafc", height=80)
-            acciones_frame.pack(fill="x", padx=20, pady=(10, 20))
-            acciones_frame.pack_propagate(False)
+            except Exception as e:
+                print(f"Error importando o creando InterfazHistorial: {e}")
+                self.mostrar_error("Error cargando historial")
             
             # Botones de acción
             btn_frame = ctk.CTkFrame(acciones_frame, fg_color="transparent")
@@ -848,6 +875,8 @@ class AplicacionPrincipal(ctk.CTk):
                 self.contenedor_principal, 
                 self.sistema
             )
+            # Asignar el master para navegación desde los botones
+            self.interfaz_checkout.master = self
             self.interfaz_checkout.pack(fill="both", expand=True)
             
             # CONFIGURAR CALLBACK PARA COMPLETAR CHECKOUT
