@@ -65,11 +65,41 @@ class LoginApp(CTk):
         try:
             print("🚪 Cerrando ventana de login...")
             self.cliente_autenticado = None
+            # Cancelar todos los afters pendientes
+            if hasattr(self, '_after_ids'):
+                for after_id in self._after_ids:
+                    try:
+                        self.after_cancel(after_id)
+                    except Exception as e:
+                        print(f"Warning cancelando after: {e}")
+                self._after_ids.clear()
+            # Limpia widgets explícitamente antes de destruir
+            self.limpiar_interfaz()
+            # Elimina referencias a imágenes para evitar errores de pyimage
+            self.side_img = None
+            self.email_icon = None
+            self.password_icon = None
+            self.google_icon = None
+            self.avatar_icon = None
             self.destroy()
         except Exception as e:
             print(f"Error cerrando login: {e}")
             self.quit()
     
+    def after(self, ms, func=None, *args):
+        """Sobrescribe after para registrar los afters y poder cancelarlos todos al cerrar."""
+        if not hasattr(self, '_after_ids'):
+            self._after_ids = set()
+        after_id = super().after(ms, func, *args)
+        self._after_ids.add(after_id)
+        return after_id
+
+    def after_cancel(self, after_id):
+        """Sobrescribe after_cancel para mantener la lista limpia."""
+        if hasattr(self, '_after_ids') and after_id in self._after_ids:
+            self._after_ids.remove(after_id)
+        return super().after_cancel(after_id)
+
     def centrar_ventana(self):
         """Centra la ventana en la pantalla con mejor compatibilidad."""
         self.update_idletasks()
@@ -476,11 +506,12 @@ def mostrar_login(callback_login_exitoso=None):
         # Configurar CustomTkinter para login (configuración ligera)
         set_appearance_mode("light")
         set_default_color_theme("blue")
-        
         print("🔐 Iniciando ventana de login...")
-        
+        # Siempre crear una nueva instancia de LoginApp y sus imágenes
         app = LoginApp(callback_login_exitoso)
-        
+        # Forzar garbage collection para limpiar imágenes viejas
+        import gc
+        gc.collect()
         # Si hay callback, no necesitamos el retorno del mainloop
         if callback_login_exitoso:
             app.mainloop()
@@ -489,7 +520,6 @@ def mostrar_login(callback_login_exitoso=None):
             # Solo para uso directo sin callback
             app.mainloop()
             return app.obtener_cliente()
-            
     except Exception as e:
         print(f"❌ Error en mostrar_login: {e}")
         import traceback

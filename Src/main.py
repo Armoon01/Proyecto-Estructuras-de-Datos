@@ -1028,52 +1028,30 @@ class AplicacionPrincipal(ctk.CTk):
         self.quit()
     
     def logout(self):
-        """Cerrar sesión y volver al login"""
+        """Cerrar sesión y reiniciar la aplicación en un nuevo proceso para evitar errores de Tkinter."""
         try:
             print("Iniciando proceso de logout...")
             print(f"Estado actual: vista={self.vista_actual}")
-            
             # Limpiar recursos antes de cerrar
             try:
                 self.limpiar_recursos()
             except Exception as e:
                 print(f"Warning limpiando recursos: {e}")
-            
             # Destruir la ventana actual
             print("Destruyendo ventana principal...")
             self.destroy()
-            
-            # Pequeña pausa para asegurar limpieza
-            import time
-            time.sleep(0.2)
-            print("Pausa de limpieza completada")
-            
-            # Función callback para el nuevo login
-            def reiniciar_aplicacion(cliente, sistema_login):
-                try:
-                    print(f"Reiniciando aplicación para {cliente.nombre}")
-                    configurar_dpi_awareness()
-                    
-                    # Crear nueva instancia de la aplicación
-                    print("🆕 Creando nueva instancia de aplicación...")
-                    nueva_app = AplicacionPrincipal(cliente_autenticado=cliente)
-                    print("Iniciando mainloop...")
-                    nueva_app.mainloop()
-                    
-                except Exception as e:
-                    print(f"Error reiniciando aplicación: {e}")
-                    traceback.print_exc()
-            
-            # Mostrar login con callback
-            print("Mostrando pantalla de login...")
-            mostrar_login(reiniciar_aplicacion)
-            
-            print("Proceso de logout completado")
-                
+            # Lanzar un nuevo proceso de Python para reiniciar la app
+            import sys, subprocess, os
+            python_exe = sys.executable
+            main_py = os.path.abspath(__file__)
+            print(f"Reiniciando app con: {python_exe} {main_py}")
+            subprocess.Popen([python_exe, main_py])
+            print("Proceso de logout completado. Cerrando proceso actual...")
+            sys.exit(0)
         except Exception as e:
             print(f"Error crítico en logout: {e}")
+            import traceback
             traceback.print_exc()
-            # En caso de error crítico, salir
             print("Saliendo por error crítico...")
             sys.exit(1)
     

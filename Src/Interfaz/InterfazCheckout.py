@@ -117,6 +117,39 @@ class InterfazCheckout(ctk.CTkFrame):
             text_color="#6b7280"
         )
         info_seguridad.pack(pady=(10, 0))
+
+    def rellenar_campos_tarjeta(self):
+        """Rellena los campos de tarjeta si el cliente ya tiene una asociada (excepto CVV)"""
+        cliente = getattr(self.sistema, 'cliente_autenticado', None)
+        if cliente and hasattr(cliente, 'get_metodo_pago'):
+            tarjeta = cliente.get_metodo_pago()
+            if tarjeta:
+                # Rellenar número (enmascarado o completo si es seguro)
+                try:
+                    numero = getattr(tarjeta, 'numero', '')
+                    if numero:
+                        self.entry_num_tarjeta.delete(0, 'end')
+                        self.entry_num_tarjeta.insert(0, numero)
+                except Exception:
+                    pass
+                # Rellenar titular
+                try:
+                    titular = getattr(tarjeta, 'titular', '')
+                    if titular:
+                        self.entry_titular.delete(0, 'end')
+                        self.entry_titular.insert(0, titular)
+                except Exception:
+                    pass
+                # Rellenar fecha de expiración
+                try:
+                    fecha = getattr(tarjeta, 'fecha_expiracion', None)
+                    if fecha:
+                        self.combo_mes.set(str(fecha.month).zfill(2))
+                        self.combo_anio.set(str(fecha.year))
+                except Exception:
+                    pass
+        # Nunca rellenar el CVV por seguridad
+
     
     def crear_campos_tarjeta(self, parent):
         """Crear campos de tarjeta dentro del scroll - VERSIÓN CORREGIDA"""
@@ -213,6 +246,9 @@ class InterfazCheckout(ctk.CTkFrame):
         )
         self.combo_anio.pack(side="left", padx=(5, 0))
         self.combo_anio.set("")  # Valor inicial vacío
+
+        # Rellenar automáticamente si el cliente ya tiene tarjeta (después de crear todos los widgets)
+        self.rellenar_campos_tarjeta()
     
     def formatear_numero_tarjeta(self, event):
         """Formatear número de tarjeta automáticamente - VERSIÓN CORREGIDA"""
@@ -561,6 +597,17 @@ class InterfazCheckout(ctk.CTkFrame):
 
             # Obtener productos del carrito
             productos = self.carrito.obtener_items_agrupados() if hasattr(self.carrito, 'obtener_items_agrupados') else []
+
+             # Validar CVV si el cliente ya tiene tarjeta asociada
+            cvv_ingresado = re.sub(r'\D', '', self.entry_cvv.get())
+            tarjeta_guardada = None
+            if hasattr(cliente, 'get_metodo_pago'):
+                tarjeta_guardada = cliente.get_metodo_pago()
+            if tarjeta_guardada and hasattr(tarjeta_guardada, 'cvv'):
+                if str(tarjeta_guardada.cvv) != str(cvv_ingresado):
+                    messagebox.showerror("Error", "El CVV ingresado no coincide con el registrado para esta tarjeta.")
+                    self._restaurar_boton()
+                    return
 
             # Crear y asignar la tarjeta de crédito al cliente antes de pagar
             from Src.TarjetaCredito import TarjetaCredito
