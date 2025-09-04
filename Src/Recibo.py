@@ -1,6 +1,9 @@
 from datetime import datetime
 
 class Recibo:
+    @property
+    def id(self):
+        return self.id_recibo
     """Clase que representa un recibo de compra en el sistema de e-commerce."""
 
     def __init__(self, id_recibo, cliente, productos, monto_total, metodo_pago):
@@ -22,6 +25,7 @@ class Recibo:
         self.fecha_emision = datetime.now()
         self.estado = "Pagado"
 
+
     @classmethod
     def generar_desde_carrito(cls, id_recibo, cliente, carrito):
         """
@@ -35,12 +39,9 @@ class Recibo:
         Returns:
             Recibo: Objeto Recibo generado
         """
-        # Aquí asumimos que el carrito tiene un método mostrar_carrito()
-        # que devuelve una lista de productos, y que cada producto tiene
-        # atributos 'nombre' y 'precio'.
-        productos = carrito.mostrar_carrito() if carrito else []
+        # Usar obtener_items_agrupados() para compatibilidad con la clase Carrito actual
+        productos = carrito.obtener_items_agrupados() if carrito and hasattr(carrito, 'obtener_items_agrupados') else []
         monto_total = sum(getattr(p, "precio", 0) for p in productos)
-
         return cls(id_recibo, cliente, productos, monto_total, cliente.get_metodo_pago())
 
     def imprimir(self):

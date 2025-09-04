@@ -4,6 +4,12 @@ from tkinter import messagebox
 from datetime import datetime
 import uuid
 import re
+# Imports explícitos de las clases principales del flujo de checkout
+from Src.Carrito import Carrito
+from Src.Checkout import Checkout
+from Src.Cliente import Cliente
+from Src.Pago import Pago
+from Src.Recibo import Recibo
 
 class InterfazCheckout(ctk.CTkFrame):
     """Interfaz de checkout con scroll funcional y botón en formulario"""
@@ -542,127 +548,111 @@ class InterfazCheckout(ctk.CTkFrame):
         try:
             # Generar ID de orden único
             self.orden_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
-            
-            # Información del pago
             fecha_actual = datetime.now()
-            numero_tarjeta_completo = self.entry_num_tarjeta.get().replace(" ", "")
+            numero_tarjeta_completo = re.sub(r'\D', '', self.entry_num_tarjeta.get())
             numero_enmascarado = "****" + numero_tarjeta_completo[-4:]
-            
-            # ✅ OBTENER CLIENTE ID CORRECTAMENTE
-            if hasattr(self.sistema, 'cliente_autenticado') and self.sistema.cliente_autenticado:
-                if hasattr(self.sistema.cliente_autenticado, 'id'):
-                    cliente_id = self.sistema.cliente_autenticado.id
-                elif hasattr(self.sistema.cliente_autenticado, 'nombre'):
-                    cliente_id = self.sistema.cliente_autenticado.nombre
-                else:
-                    cliente_id = "CLIENTE_AUTENTICADO"
-            else:
-                cliente_id = "GUEST"
-            
-            # ✅ OBTENER ITEMS DEL CARRITO ANTES DE LIMPIAR
-            items_carrito = self.carrito.obtener_items_agrupados()
-            productos_detalle = []
-            
-            print(f"🔍 Procesando {len(items_carrito)} tipos de productos en el carrito...")
-            
-            # ✅ ACTUALIZAR STOCK DE PRODUCTOS Y CREAR DETALLE
-            for item in items_carrito:
-                try:
-                    producto = item.producto
-                    cantidad = item.cantidad
-                    
-                    print(f"📦 Procesando: {cantidad}x {producto.nombre}")
-                    
-                    # ✅ ACTUALIZAR STOCK EN EL INVENTARIO
-                    if hasattr(self.sistema, 'inventario'):
-                        # Usar reducir_stock que es más apropiado
-                        stock_reducido = self.sistema.inventario.reducir_stock(producto.id, cantidad)
-                        if stock_reducido:
-                            print(f"📊 Stock reducido para {producto.nombre}: -{cantidad} unidades")
-                        else:
-                            print(f"⚠️ No se pudo reducir stock para {producto.nombre}")
-                    
-                    # ✅ AGREGAR AL DETALLE DE PRODUCTOS
-                    productos_detalle.append({
-                        'producto_id': producto.id,
-                        'nombre': producto.nombre,
-                        'cantidad': cantidad,
-                        'precio_unitario': producto.precio,
-                        'subtotal': producto.precio * cantidad
-                    })
-                    
-                except Exception as e:
-                    print(f"⚠️ Error procesando producto {item}: {e}")
-            
-            # ✅ CREAR DATOS COMPLETOS DE LA ORDEN
-            orden_data = {
+
+            # Obtener cliente real
+            cliente = getattr(self.sistema, 'cliente_autenticado', None)
+            if not cliente:
+                messagebox.showerror("Error", "No hay cliente autenticado para generar el recibo.")
+                self._restaurar_boton()
+                return
+
+            # Obtener productos del carrito
+            productos = self.carrito.obtener_items_agrupados() if hasattr(self.carrito, 'obtener_items_agrupados') else []
+
+            # Crear y asignar la tarjeta de crédito al cliente antes de pagar
+            from Src.TarjetaCredito import TarjetaCredito
+            try:
+                tarjeta = TarjetaCredito(
+                    numero=numero_tarjeta_completo,
+                    titular=self.entry_titular.get().strip(),
+                    fecha_expiracion=datetime(int(self.combo_anio.get()), int(self.combo_mes.get()), 1).date(),
+                    cvv=re.sub(r'\D', '', self.entry_cvv.get())
+                )
+                cliente.set_metodo_pago(tarjeta)
+            except Exception as e:
+                messagebox.showerror("Error", f"Datos de tarjeta inválidos: {e}")
+                self._restaurar_boton()
+                return
+
+            # Crear recibo real
+            recibo = Recibo.generar_desde_carrito(
+                id_recibo=f"REC-{uuid.uuid4().hex[:8].upper()}",
+                cliente=cliente,
+                carrito=self.carrito
+            )
+
+            # Crear pago real
+            pago = Pago(
+                id_pago=f"PAY-{uuid.uuid4().hex[:8].upper()}",
+                monto=self.total_final,
+                metodo=cliente.get_metodo_pago(),
+                cliente=cliente,
+                fecha=fecha_actual
+            )
+            pago.procesar_pago(cliente.get_metodo_pago())
+
+            # Guardar recibo e imprimirlo (puedes mostrarlo en consola o en la interfaz)
+            recibo.imprimir()
+
+            # Guardar en CSV como antes (opcional, puedes adaptar para usar recibo/pago)
+            self.guardar_orden_csv({
                 'id': self.orden_id,
                 'fecha': fecha_actual.strftime("%Y-%m-%d %H:%M:%S"),
-                'cliente_id': cliente_id,
-                'titular_tarjeta': self.entry_titular.get(),
-                'numero_tarjeta': numero_enmascarado,
+                'cliente_id': cliente.get_id_cliente(),
+                'titular_tarjeta': cliente.get_metodo_pago().get_titular(),
                 'metodo_pago': 'Tarjeta de Crédito',
                 'subtotal': self.carrito.calcular_total(),
                 'impuestos': self.carrito.calcular_total() * 0.16,
                 'total': self.total_final,
                 'estado': 'Pagado',
-                'cantidad_productos': len(items_carrito),
-                'productos_detalle': productos_detalle
-            }
-            
-            # ✅ CREAR DATOS DEL PAGO
-            pago_data = {
-                'id': f"PAY-{uuid.uuid4().hex[:8].upper()}",
+                'cantidad_productos': len(productos),
+                'productos_detalle': productos
+            })
+
+            # Agregar la orden a la pila de historial en memoria
+            if hasattr(self.sistema, 'pila_ordenes'):
+                try:
+                    self.sistema.pila_ordenes.push(recibo)
+                except Exception as e:
+                    print(f"❌ Error agregando orden a pila_ordenes: {e}")
+            self.guardar_pago_csv({
+                'id': pago.id_pago,
                 'orden_id': self.orden_id,
                 'fecha': fecha_actual.strftime("%Y-%m-%d %H:%M:%S"),
                 'metodo': 'Tarjeta de Crédito',
                 'monto': self.total_final,
-                'estado': 'Completado',
+                'estado': pago.estado,
                 'referencia': numero_enmascarado
-            }
-            
-            # ✅ AGREGAR A ESTRUCTURAS DEL SISTEMA
-            if hasattr(self.sistema, 'pila_ordenes'):
-                orden_obj = type('Orden', (), orden_data)()
-                self.sistema.pila_ordenes.push(orden_obj)
-                print(f"📊 Orden agregada a la pila: {self.orden_id}")
-            
-            if hasattr(self.sistema, 'cola_pagos'):
-                pago_obj = type('Pago', (), pago_data)()
-                self.sistema.cola_pagos.enqueue(pago_obj)
-                print(f"💳 Pago agregado a la cola: {pago_data['id']}")
-            
-            # ✅ GUARDAR EN ARCHIVOS CSV
-            try:
-                self.guardar_orden_csv(orden_data)
-                self.guardar_pago_csv(pago_data)
-                self.guardar_transaccion_csv(orden_data, pago_data)
-                print("💾 Datos guardados en archivos CSV exitosamente")
-            except Exception as e:
-                print(f"⚠️ Error guardando en CSV: {e}")
-            
-            # ✅ LIMPIAR CARRITO DESPUÉS DE PROCESAR TODO
-            self.carrito.limpiar()
-            print(f"🛒 Carrito limpiado después de la compra")
-            
-            # ✅ ACTUALIZAR CONTADOR DEL CARRITO EN LA INTERFAZ PRINCIPAL
+            })
+            self.guardar_transaccion_csv(
+                {
+                    'id': self.orden_id,
+                    'fecha': fecha_actual.strftime("%Y-%m-%d %H:%M:%S"),
+                    'cliente_id': cliente.get_id_cliente(),
+                    'total': self.total_final,
+                    'metodo_pago': 'Tarjeta de Crédito',
+                    'estado': 'Pagado',
+                    'cantidad_productos': len(productos)
+                },
+                {
+                    'id': pago.id_pago,
+                    'fecha': fecha_actual.strftime("%Y-%m-%d %H:%M:%S"),
+                    'metodo': 'Tarjeta de Crédito',
+                    'monto': self.total_final,
+                    'estado': pago.estado,
+                    'referencia': numero_enmascarado
+                }
+            )
+
+            # Limpiar carrito
+            self.carrito.limpiar() if hasattr(self.carrito, 'limpiar') else None
             if hasattr(self, 'master') and hasattr(self.master, 'actualizar_contador_carrito'):
                 self.master.actualizar_contador_carrito()
-                print("🔄 Contador del carrito actualizado en interfaz principal")
-            
-            # ✅ LOGS DETALLADOS DE ÉXITO
-            print(f"\n✅ COMPRA PROCESADA EXITOSAMENTE:")
-            print(f"   🆔 Orden: {self.orden_id}")
-            print(f"   💰 Total: ${self.total_final:.2f}")
-            print(f"   💳 Tarjeta: {numero_enmascarado}")
-            print(f"   👤 Cliente: {cliente_id}")
-            print(f"   📦 Productos: {len(productos_detalle)} tipos")
-            print(f"   📊 Stock actualizado para {len(productos_detalle)} productos")
-            print(f"   💾 Datos persistidos en CSV y estructuras")
-            
-            # Mostrar confirmación
+
             self.mostrar_confirmacion()
-            
         except Exception as e:
             print(f"❌ Error procesando pago: {e}")
             import traceback
@@ -788,6 +778,9 @@ class InterfazCheckout(ctk.CTkFrame):
         """Navegar al carrito"""
         if hasattr(self.master, 'mostrar_carrito'):
             self.master.mostrar_carrito()
+        else:
+            from tkinter import messagebox
+            messagebox.showwarning("Aviso", "No se puede mostrar el carrito porque la ventana principal no implementa 'mostrar_carrito'.")
     
     def ir_a_historial(self):
         """Navegar al historial"""

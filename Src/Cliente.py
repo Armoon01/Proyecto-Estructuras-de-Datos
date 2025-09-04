@@ -1,6 +1,3 @@
-"""
-Clase Cliente simplificada para el sistema de e-commerce universitario.
-"""
 from Carrito import Carrito
 from Producto import Producto
 from estructuras.Lista import Lista
@@ -8,19 +5,18 @@ from TarjetaCredito import TarjetaCredito
 
 class Cliente:
     """Clase para representar clientes del sistema."""
-    
-    #def __init__(self, id_cliente, nombre, email, telefono="", carrito):
-    def __init__(self, id_cliente, nombre, email, carrito, tarjeta, telefono=""):
+
+    def __init__(self, id_cliente, nombre, email, carrito, tarjeta=None, telefono=""):
         """
         Inicializa un cliente.
-        
+
         Args:
             id_cliente (str): ID único del cliente
             nombre (str): Nombre completo del cliente
             email (str): Email del cliente
             telefono (str): Teléfono del cliente (opcional)
             carrito (Carrito): Carrito asociado al cliente
-            
+            tarjeta (TarjetaCredito, opcional): Tarjeta de crédito asociada
         """
         # Validaciones básicas
         if not id_cliente:
@@ -29,9 +25,9 @@ class Cliente:
             raise ValueError("Nombre del cliente no puede estar vacío")
         if not email or "@" not in email:
             raise ValueError("Email debe ser válido")
-        if not isinstance(tarjeta, TarjetaCredito):
+        if tarjeta is not None and not isinstance(tarjeta, TarjetaCredito):
             raise ValueError("Se debe proporcionar una tarjeta de crédito válida")
-        
+
         self.id_cliente = id_cliente
         self.nombre = nombre
         self.email = email
@@ -240,6 +236,7 @@ class Cliente:
             obj: Tarjeta de Credito
         """
         return self.metodo_pago
+    
     def set_telefono(self, telefono):
         """
         Actualiza el teléfono del cliente.
@@ -283,19 +280,22 @@ class Cliente:
             self.id_cliente = id_cliente
         else:
             raise ValueError("ID del cliente no puede estar vacío")
+
     def set_metodo_pago(self, tarjeta):
         """
-        Actualiza el método de pago del cliente.
-
+        Asigna o actualiza la tarjeta de crédito del cliente.
         Args:
-            tarjeta (TarjetaCredito): Nueva tarjeta de crédito
+            tarjeta (TarjetaCredito): Tarjeta de crédito válida
         """
+        # Validación flexible: acepta cualquier objeto con los métodos requeridos
+        if not (hasattr(tarjeta, 'validar') and hasattr(tarjeta, 'autorizar_pago')):
+            raise ValueError("Se debe proporcionar una tarjeta de crédito válida")
         self.metodo_pago = tarjeta
 
     def desactivar(self):
         """Desactiva el cliente."""
         self.activo = False
-    
+
     def activar(self):
         """Activa el cliente."""
         self.activo = True

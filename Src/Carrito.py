@@ -179,8 +179,13 @@ class Carrito:
             del self.items[producto_id]
             
             # Remover de lista de productos individuales
-            self.productos = [p for p in self.productos 
-                            if self._obtener_id_producto(p) != producto_id]
+            productos_iterable = self.productos
+            try:
+                productos_iterable = list(self.productos)
+            except Exception:
+                pass
+            self.productos = [p for p in productos_iterable 
+                              if self._obtener_id_producto(p) != producto_id]
             
             print(f"🗑️ Eliminado completamente: {producto_nombre}")
             return True

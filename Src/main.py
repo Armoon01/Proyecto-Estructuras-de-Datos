@@ -527,8 +527,16 @@ class AplicacionPrincipal(ctk.CTk):
             contenido_frame = ctk.CTkFrame(historial_frame, fg_color="#ffffff")
             contenido_frame.pack(fill="both", expand=True, padx=20, pady=10)
             
-            # SIMULAR DATOS DE HISTORIAL (PLACEHOLDER)
-            self.crear_historial_simulado(contenido_frame)
+            # CARGAR DATOS REALES DE HISTORIAL
+            try:
+                from Interfaz.InterfazHistorial import InterfazHistorial
+                nombre = getattr(self.cliente_autenticado, 'nombre', 'Invitado') if self.cliente_autenticado else 'Invitado'
+                email = getattr(self.cliente_autenticado, 'email', '') if self.cliente_autenticado else ''
+                historial_widget = InterfazHistorial(contenido_frame, self.sistema, nombre, email)
+                historial_widget.pack(fill="both", expand=True)
+            except Exception as e:
+                print(f"Error importando o creando InterfazHistorial: {e}")
+                self.mostrar_error("Error cargando historial")
             
             # PANEL DE ACCIONES
             acciones_frame = ctk.CTkFrame(historial_frame, fg_color="#f8fafc", height=80)

@@ -1,8 +1,10 @@
 from customtkinter import *
 from PIL import Image
 from tkinter import messagebox
+
 import os
 import sys
+from datetime import datetime
 
 # Agregar el directorio padre al path para importar módulos
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -10,6 +12,12 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
 from Login import SistemaLogin
+# Imports explícitos de las clases principales del flujo de checkout
+from Src.Carrito import Carrito
+from Src.Checkout import Checkout
+from Src.Cliente import Cliente
+from Src.Pago import Pago
+from Src.Recibo import Recibo
 
 class LoginApp(CTk):
     def __init__(self, callback_login_exitoso=None):
@@ -360,16 +368,22 @@ class LoginApp(CTk):
         
         try:
             # Intentar autenticación
-            exito, mensaje, cliente = self.sistema_login.iniciar_sesion(email, password)
-            
+            exito, mensaje, cliente_base = self.sistema_login.iniciar_sesion(email, password)
             if exito:
+                # Crear solo el carrito para el cliente, sin tarjeta
+                carrito = Carrito(cliente_id=cliente_base.id_cliente if hasattr(cliente_base, 'id_cliente') else cliente_base.nombre)
+                cliente = Cliente(
+                    id_cliente=cliente_base.id_cliente if hasattr(cliente_base, 'id_cliente') else cliente_base.nombre,
+                    nombre=cliente_base.nombre,
+                    email=cliente_base.email,
+                    carrito=carrito,
+                    telefono=getattr(cliente_base, 'telefono', "")
+                )
                 self.cliente_autenticado = cliente
                 messagebox.showinfo("✅ Login Exitoso", f"¡Bienvenido, {cliente.nombre}!")
-                
                 # Ejecutar callback si existe
                 if self.callback_login_exitoso:
-                    # Cerrar la ventana de login antes de ejecutar callback
-                    self.withdraw()  # Ocultar ventana en lugar de destruir inmediatamente
+                    self.withdraw()
                     self.after(100, lambda: self._ejecutar_callback_y_cerrar(cliente))
                 else:
                     self.destroy()
@@ -377,7 +391,6 @@ class LoginApp(CTk):
                 messagebox.showerror("❌ Error de Login", mensaje)
                 self.password_entry.delete(0, "end")
                 self.password_entry.focus()
-        
         except Exception as e:
             messagebox.showerror("❌ Error", f"Error inesperado: {str(e)}")
             print(f"Error en login: {e}")

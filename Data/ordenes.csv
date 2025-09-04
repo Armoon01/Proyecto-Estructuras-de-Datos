@@ -11,3 +11,11 @@ id_orden,fecha_pedido,cliente,email_cliente,telefono_cliente,metodo_pago,product
 1,2025-08-25 08:15:01,,Mouse Inalámbrico,100,25.5,2550.0,13349.880000000001
 1,2025-08-25 08:47:37,Andy,Laptop HP,1,899.99,899.99,899.99
 ORD-491AB077,2025-08-27 11:13:44,Jean,Jean XYZ CBA,Tarjeta de Crédito,9255.49,1480.8784,10736.3684,Pagado,6
+ORD-31FAA5EC,2025-09-03 17:56:33,ddd,Daniel,Tarjeta de Crédito,1820.0,291.2,2111.2,Pagado,1
+ORD-D83B4DFA,2025-09-03 17:59:55,ddd,Daniel,Tarjeta de Crédito,4000.0,640.0,4640.0,Pagado,1
+ORD-2C11A481,2025-09-03 18:03:28,ddd,Daniel,Tarjeta de Crédito,1820.0,291.2,2111.2,Pagado,1
+ORD-229349E6,2025-09-03 18:06:20,ddd,Daniel,Tarjeta de Crédito,1820.0,291.2,2111.2,Pagado,1
+ORD-196E61B3,2025-09-03 18:08:49,ddd,Daniel,Tarjeta de Crédito,1820.0,291.2,2111.2,Pagado,1
+ORD-7CB4A1DA,2025-09-03 18:10:51,ddd,Daniel,Tarjeta de Crédito,1820.0,291.2,2111.2,Pagado,1
+ORD-3088F354,2025-09-03 18:13:41,ddd,Daniel,Tarjeta de Crédito,1820.0,291.2,2111.2,Pagado,1
+ORD-C7F1478D,2025-09-03 18:17:53,ddd,Daniel,Tarjeta de Crédito,1820.0,291.2,2111.2,Pagado,1

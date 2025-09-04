@@ -1,2 +1,10 @@
 transaccion_id,orden_id,pago_id,fecha,cliente_id,total,metodo_pago,estado,productos_cantidad
 TXN-9641CD42,ORD-491AB077,PAY-367E65D6,2025-08-27 11:13:44,Jean,10736.3684,Tarjeta de Crédito,Completada,6
+TXN-F0C78CB8,ORD-31FAA5EC,PAY-B602A11F,2025-09-03 17:56:33,ddd,2111.2,Tarjeta de Crédito,Completada,1
+TXN-836D2172,ORD-D83B4DFA,PAY-875FCC37,2025-09-03 17:59:55,ddd,4640.0,Tarjeta de Crédito,Completada,1
+TXN-DC6E09A2,ORD-2C11A481,PAY-6D3680F3,2025-09-03 18:03:28,ddd,2111.2,Tarjeta de Crédito,Completada,1
+TXN-82F12CC7,ORD-229349E6,PAY-921CEDD3,2025-09-03 18:06:20,ddd,2111.2,Tarjeta de Crédito,Completada,1
+TXN-F91CA49A,ORD-196E61B3,PAY-7BBFC231,2025-09-03 18:08:49,ddd,2111.2,Tarjeta de Crédito,Completada,1
+TXN-77D7FD5E,ORD-7CB4A1DA,PAY-D86BFE1B,2025-09-03 18:10:51,ddd,2111.2,Tarjeta de Crédito,Completada,1
+TXN-EE9B21E0,ORD-3088F354,PAY-E822FE91,2025-09-03 18:13:41,ddd,2111.2,Tarjeta de Crédito,Completada,1
+TXN-F9BABCE1,ORD-C7F1478D,PAY-5CE8024C,2025-09-03 18:17:53,ddd,2111.2,Tarjeta de Crédito,Completada,1
