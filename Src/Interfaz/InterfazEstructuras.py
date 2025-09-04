@@ -12,7 +12,7 @@ class InterfazEstructuras(ctk.CTkFrame):
         
         self.sistema = sistema_ecommerce
         
-        # ✅ VERIFICAR E INICIALIZAR ESTRUCTURAS
+        # VERIFICAR E INICIALIZAR ESTRUCTURAS
         self.verificar_estructuras()
         
         # Configurar grid
@@ -31,25 +31,25 @@ class InterfazEstructuras(ctk.CTkFrame):
     def verificar_estructuras(self):
         """Verificar e inicializar estructuras de datos si no existen"""
         try:
-            # ✅ VERIFICAR PILA DE ÓRDENES
+            # VERIFICAR PILA DE ÓRDENES
             if not hasattr(self.sistema, 'pila_ordenes') or self.sistema.pila_ordenes is None:
                 from estructuras.Pila import Pila
                 self.sistema.pila_ordenes = Pila()
                 print("🔧 Pila de órdenes inicializada")
             
-            # ✅ VERIFICAR COLA DE PAGOS  
+            # VERIFICAR COLA DE PAGOS
             if not hasattr(self.sistema, 'cola_pagos') or self.sistema.cola_pagos is None:
                 from estructuras.Cola import Cola
                 self.sistema.cola_pagos = Cola()
                 print("🔧 Cola de pagos inicializada")
             
-            # ✅ VERIFICAR INVENTARIO
+            # VERIFICAR INVENTARIO
             if not hasattr(self.sistema, 'inventario') or self.sistema.inventario is None:
                 from Inventario import Inventario
                 self.sistema.inventario = Inventario()
                 print("🔧 Inventario inicializado")
             
-            # ✅ VERIFICAR CARRITO
+            # VERIFICAR CARRITO
             if not hasattr(self.sistema, 'carrito') or self.sistema.carrito is None:
                 from Carrito import Carrito
                 self.sistema.carrito = Carrito("estructuras_viewer")
@@ -58,16 +58,16 @@ class InterfazEstructuras(ctk.CTkFrame):
             print("✅ Todas las estructuras verificadas/inicializadas")
             
         except Exception as e:
-            print(f"❌ Error verificando estructuras: {e}")
+            print(f"Error verificando estructuras: {e}")
             import traceback
             traceback.print_exc()
     
     def crear_interfaz(self):
         """Crear la interfaz de estructuras mejorada"""
-        # ✅ HEADER MEJORADO
+        # HEADER MEJORADO
         self.crear_header()
-        
-        # ✅ NOTEBOOK CON PESTAÑAS MEJORADAS
+
+        # NOTEBOOK CON PESTAÑAS MEJORADAS
         self.notebook = ctk.CTkTabview(self, height=500)
         self.notebook.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0, 10))
         
@@ -77,8 +77,8 @@ class InterfazEstructuras(ctk.CTkFrame):
         self.crear_tab_pila_ordenes()
         self.crear_tab_cola_pagos()
         self.crear_tab_estadisticas()
-        
-        # ✅ PANEL DE CONTROL MEJORADO
+
+        # PANEL DE CONTROL MEJORADO
         self.crear_panel_control()
     
     def crear_header(self):
@@ -87,8 +87,8 @@ class InterfazEstructuras(ctk.CTkFrame):
         header_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=(10, 5))
         header_frame.pack_propagate(False)
         header_frame.grid_columnconfigure(1, weight=1)
-        
-        # ✅ TÍTULO E ICONO
+
+        # TÍTULO E ICONO
         title_frame = ctk.CTkFrame(header_frame, fg_color="transparent")
         title_frame.grid(row=0, column=0, sticky="w", padx=20, pady=15)
         
@@ -99,7 +99,7 @@ class InterfazEstructuras(ctk.CTkFrame):
             text_color="white"
         ).pack()
         
-        # ✅ INFORMACIÓN GENERAL EN TIEMPO REAL
+        # INFORMACIÓN GENERAL EN TIEMPO REAL
         self.info_frame = ctk.CTkFrame(header_frame, fg_color="transparent")
         self.info_frame.grid(row=0, column=1, sticky="e", padx=20, pady=15)
         
@@ -111,7 +111,7 @@ class InterfazEstructuras(ctk.CTkFrame):
         )
         self.lbl_estado_general.pack()
         
-        # ✅ CONTROL DE AUTO-REFRESH
+        # CONTROL DE AUTO-REFRESH
         refresh_frame = ctk.CTkFrame(header_frame, fg_color="transparent")
         refresh_frame.grid(row=0, column=2, sticky="e", padx=20, pady=15)
         
@@ -130,8 +130,8 @@ class InterfazEstructuras(ctk.CTkFrame):
         tab = self.notebook.add("📦 Inventario")
         tab.grid_columnconfigure(0, weight=1)
         tab.grid_rowconfigure(1, weight=1)
-        
-        # ✅ INFO PANEL MEJORADO
+
+        # INFO PANEL MEJORADO
         info_frame = ctk.CTkFrame(tab, fg_color="#f3f4f6")
         info_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
         
@@ -146,8 +146,8 @@ class InterfazEstructuras(ctk.CTkFrame):
             font=("Arial Black", 16),
             text_color="#1f2937"
         ).grid(row=0, column=0, columnspan=3, pady=(0, 10))
-        
-        # ✅ ESTADÍSTICAS EN TIEMPO REAL
+
+        # ESTADÍSTICAS EN TIEMPO REAL
         self.lbl_total_productos = ctk.CTkLabel(
             info_container,
             text="📦 Productos: 0",
@@ -171,8 +171,8 @@ class InterfazEstructuras(ctk.CTkFrame):
             text_color="#f59e0b"
         )
         self.lbl_stock_total.grid(row=1, column=2, padx=10)
-        
-        # ✅ ÁREA DE VISUALIZACIÓN MEJORADA
+
+        # ÁREA DE VISUALIZACIÓN MEJORADA
         self.text_inventario = ctk.CTkTextbox(
             tab, 
             font=("Courier New", 10),
@@ -185,8 +185,8 @@ class InterfazEstructuras(ctk.CTkFrame):
         tab = self.notebook.add("🛒 Carrito")
         tab.grid_columnconfigure(0, weight=1)
         tab.grid_rowconfigure(1, weight=1)
-        
-        # ✅ INFO PANEL DEL CARRITO
+
+        # INFO PANEL DEL CARRITO
         info_frame = ctk.CTkFrame(tab, fg_color="#f0fdf4")
         info_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
         
@@ -201,7 +201,7 @@ class InterfazEstructuras(ctk.CTkFrame):
             text_color="#1f2937"
         ).grid(row=0, column=0, columnspan=3, pady=(0, 10))
         
-        # ✅ ESTADÍSTICAS DEL CARRITO
+        # ESTADÍSTICAS DEL CARRITO
         self.lbl_items_carrito = ctk.CTkLabel(
             info_container,
             text="📦 Items: 0",
@@ -226,7 +226,7 @@ class InterfazEstructuras(ctk.CTkFrame):
         )
         self.lbl_productos_unicos.grid(row=1, column=2, padx=10)
         
-        # ✅ ÁREA DE VISUALIZACIÓN DEL CARRITO
+        # ÁREA DE VISUALIZACIÓN DEL CARRITO
         self.text_carrito = ctk.CTkTextbox(
             tab,
             font=("Courier New", 10),
@@ -239,8 +239,8 @@ class InterfazEstructuras(ctk.CTkFrame):
         tab = self.notebook.add("🗂️ Pila LIFO")
         tab.grid_columnconfigure(0, weight=1)
         tab.grid_rowconfigure(1, weight=1)
-        
-        # ✅ INFO PANEL DE LA PILA
+
+        # INFO PANEL DE LA PILA
         info_frame = ctk.CTkFrame(tab, fg_color="#fef3c7")
         info_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
         
@@ -255,7 +255,7 @@ class InterfazEstructuras(ctk.CTkFrame):
             text_color="#1f2937"
         ).grid(row=0, column=0, columnspan=3, pady=(0, 10))
         
-        # ✅ ESTADÍSTICAS DE LA PILA
+        # ESTADÍSTICAS DE LA PILA
         self.lbl_ordenes_pila = ctk.CTkLabel(
             info_container,
             text="📋 Órdenes: 0",
@@ -280,7 +280,7 @@ class InterfazEstructuras(ctk.CTkFrame):
         )
         self.lbl_ultima_orden.grid(row=1, column=2, padx=10)
         
-        # ✅ ÁREA DE VISUALIZACIÓN DE LA PILA
+        # ÁREA DE VISUALIZACIÓN DE LA PILA
         self.text_pila = ctk.CTkTextbox(
             tab,
             font=("Courier New", 10),
@@ -293,8 +293,8 @@ class InterfazEstructuras(ctk.CTkFrame):
         tab = self.notebook.add("🏃 Cola FIFO")
         tab.grid_columnconfigure(0, weight=1)
         tab.grid_rowconfigure(1, weight=1)
-        
-        # ✅ INFO PANEL DE LA COLA
+
+        # INFO PANEL DE LA COLA
         info_frame = ctk.CTkFrame(tab, fg_color="#e0f2fe")
         info_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
         
@@ -309,7 +309,7 @@ class InterfazEstructuras(ctk.CTkFrame):
             text_color="#1f2937"
         ).grid(row=0, column=0, columnspan=3, pady=(0, 10))
         
-        # ✅ ESTADÍSTICAS DE LA COLA
+        # ESTADÍSTICAS DE LA COLA
         self.lbl_pagos_cola = ctk.CTkLabel(
             info_container,
             text="💳 Pagos: 0",
@@ -334,7 +334,7 @@ class InterfazEstructuras(ctk.CTkFrame):
         )
         self.lbl_proximo_pago.grid(row=1, column=2, padx=10)
         
-        # ✅ ÁREA DE VISUALIZACIÓN DE LA COLA
+        # ÁREA DE VISUALIZACIÓN DE LA COLA
         self.text_cola = ctk.CTkTextbox(
             tab,
             font=("Courier New", 10),
@@ -347,8 +347,8 @@ class InterfazEstructuras(ctk.CTkFrame):
         tab = self.notebook.add("📈 Estadísticas")
         tab.grid_columnconfigure(0, weight=1)
         tab.grid_rowconfigure(1, weight=1)
-        
-        # ✅ PANEL DE ESTADÍSTICAS GLOBALES
+
+        # PANEL DE ESTADÍSTICAS GLOBALES
         stats_frame = ctk.CTkFrame(tab)
         stats_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
         stats_frame.grid_columnconfigure((0, 1, 2), weight=1)
@@ -359,8 +359,8 @@ class InterfazEstructuras(ctk.CTkFrame):
             font=("Arial Black", 18),
             text_color="#1f2937"
         ).grid(row=0, column=0, columnspan=3, pady=15)
-        
-        # ✅ MÉTRICAS DEL SISTEMA
+
+        # MÉTRICAS DEL SISTEMA
         # Columna 1: Inventario
         inv_frame = ctk.CTkFrame(stats_frame, fg_color="#f0fdf4")
         inv_frame.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
@@ -396,8 +396,8 @@ class InterfazEstructuras(ctk.CTkFrame):
         self.lbl_stat_pagos.pack()
         self.lbl_stat_ultima_act = ctk.CTkLabel(activity_frame, text="Última: N/A", font=("Arial", 12))
         self.lbl_stat_ultima_act.pack(pady=(0, 10))
-        
-        # ✅ ÁREA DE LOGS DEL SISTEMA
+
+        # ÁREA DE LOGS DEL SISTEMA
         ctk.CTkLabel(
             tab,
             text="📋 Log de Actividad del Sistema",
@@ -418,8 +418,8 @@ class InterfazEstructuras(ctk.CTkFrame):
         panel.grid(row=2, column=0, sticky="ew", padx=10, pady=(0, 10))
         panel.pack_propagate(False)
         panel.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
-        
-        # ✅ BOTONES DE CONTROL MEJORADOS
+
+        # BOTONES DE CONTROL MEJORADOS
         btn_actualizar = ctk.CTkButton(
             panel,
             text="🔄 Actualizar",
@@ -487,14 +487,14 @@ class InterfazEstructuras(ctk.CTkFrame):
             self.actualizar_logs()
             
         except Exception as e:
-            print(f"❌ Error actualizando visualizaciones: {e}")
+            print(f"Error actualizando visualizaciones: {e}")
             import traceback
             traceback.print_exc()
     
     def actualizar_estado_general(self):
         """Actualizar estado general en el header"""
         try:
-            # ✅ CALCULAR ESTADÍSTICAS GENERALES
+            # CALCULAR ESTADÍSTICAS GENERALES
             total_productos = len(self.sistema.inventario.obtener_productos()) if hasattr(self.sistema.inventario, 'obtener_productos') else 0
             items_carrito = self.sistema.carrito.obtener_cantidad_items() if hasattr(self.sistema.carrito, 'obtener_cantidad_items') else 0
             ordenes_pila = len(self.obtener_elementos_seguros(self.sistema.pila_ordenes))
@@ -528,7 +528,7 @@ class InterfazEstructuras(ctk.CTkFrame):
             else:
                 return []
         except Exception as e:
-            print(f"⚠️ Error obteniendo elementos: {e}")
+            print(f"Error obteniendo elementos: {e}")
             return []
     
     def actualizar_inventario(self):
@@ -538,17 +538,17 @@ class InterfazEstructuras(ctk.CTkFrame):
             
             productos = self.sistema.inventario.obtener_productos() if hasattr(self.sistema.inventario, 'obtener_productos') else []
             
-            # ✅ CALCULAR ESTADÍSTICAS
+            # CALCULAR ESTADÍSTICAS
             total_productos = len(productos)
             valor_total = sum(p.precio * p.stock for p in productos)
             stock_total = sum(p.stock for p in productos)
             
-            # ✅ ACTUALIZAR LABELS DE ESTADÍSTICAS
+            # ACTUALIZAR LABELS DE ESTADÍSTICAS
             self.lbl_total_productos.configure(text=f"📦 Productos: {total_productos}")
             self.lbl_valor_total.configure(text=f"💰 Valor Total: ${valor_total:.2f}")
             self.lbl_stock_total.configure(text=f"📊 Stock Total: {stock_total}")
-            
-            # ✅ CONTENIDO MEJORADO
+
+            # CONTENIDO MEJORADO
             contenido = "═" * 80 + "\n"
             contenido += "                        📦 INVENTARIO DE PRODUCTOS\n"
             contenido += "═" * 80 + "\n\n"
@@ -583,8 +583,8 @@ class InterfazEstructuras(ctk.CTkFrame):
         """Actualizar visualización del carrito"""
         try:
             self.text_carrito.delete("1.0", tk.END)
-            
-            # ✅ OBTENER DATOS DEL CARRITO MEJORADO
+
+            # OBTENER DATOS DEL CARRITO MEJORADO
             items_agrupados = []
             total_carrito = 0
             items_count = 0
@@ -593,14 +593,14 @@ class InterfazEstructuras(ctk.CTkFrame):
                 items_agrupados = self.sistema.carrito.obtener_items_agrupados()
                 total_carrito = self.sistema.carrito.calcular_total()
                 items_count = self.sistema.carrito.obtener_cantidad_items()
-            
-            # ✅ ACTUALIZAR ESTADÍSTICAS
+
+            # ACTUALIZAR ESTADÍSTICAS
             productos_unicos = len(items_agrupados)
             self.lbl_items_carrito.configure(text=f"📦 Items: {items_count}")
             self.lbl_total_carrito.configure(text=f"💰 Total: ${total_carrito:.2f}")
             self.lbl_productos_unicos.configure(text=f"🔢 Únicos: {productos_unicos}")
             
-            # ✅ CONTENIDO DEL CARRITO
+            # CONTENIDO DEL CARRITO
             contenido = "═" * 80 + "\n"
             contenido += "                        🛒 CARRITO DE COMPRAS\n"
             contenido += "═" * 80 + "\n\n"
@@ -640,8 +640,8 @@ class InterfazEstructuras(ctk.CTkFrame):
             self.text_pila.delete("1.0", tk.END)
             
             ordenes = self.obtener_elementos_seguros(self.sistema.pila_ordenes)
-            
-            # ✅ CALCULAR ESTADÍSTICAS
+
+            # CALCULAR ESTADÍSTICAS
             total_ordenes = len(ordenes)
             valor_total = 0
             ultima_orden = "N/A"
@@ -649,13 +649,13 @@ class InterfazEstructuras(ctk.CTkFrame):
             if ordenes:
                 valor_total = sum(getattr(orden, 'total', 0) for orden in ordenes)
                 ultima_orden = f"#{getattr(ordenes[-1], 'id', 'N/A')}" if ordenes else "N/A"
-            
-            # ✅ ACTUALIZAR ESTADÍSTICAS
+
+            # ACTUALIZAR ESTADÍSTICAS
             self.lbl_ordenes_pila.configure(text=f"📋 Órdenes: {total_ordenes}")
             self.lbl_valor_ordenes.configure(text=f"💰 Valor Total: ${valor_total:.2f}")
             self.lbl_ultima_orden.configure(text=f"🔝 Tope: {ultima_orden}")
             
-            # ✅ CONTENIDO DE LA PILA
+            # CONTENIDO DE LA PILA
             contenido = "═" * 80 + "\n"
             contenido += "                      🗂️ PILA DE ÓRDENES (LIFO)\n"
             contenido += "═" * 80 + "\n\n"
@@ -702,8 +702,8 @@ class InterfazEstructuras(ctk.CTkFrame):
             self.text_cola.delete("1.0", tk.END)
             
             pagos = self.obtener_elementos_seguros(self.sistema.cola_pagos)
-            
-            # ✅ CALCULAR ESTADÍSTICAS
+
+            # CALCULAR ESTADÍSTICAS
             total_pagos = len(pagos)
             monto_total = 0
             proximo_pago = "N/A"
@@ -712,12 +712,12 @@ class InterfazEstructuras(ctk.CTkFrame):
                 monto_total = sum(getattr(pago, 'monto', 0) for pago in pagos)
                 proximo_pago = f"#{getattr(pagos[0], 'id_pago', 'N/A')}" if pagos else "N/A"
             
-            # ✅ ACTUALIZAR ESTADÍSTICAS
+            # ACTUALIZAR ESTADÍSTICAS
             self.lbl_pagos_cola.configure(text=f"💳 Pagos: {total_pagos}")
             self.lbl_monto_total.configure(text=f"💰 Monto Total: ${monto_total:.2f}")
             self.lbl_proximo_pago.configure(text=f"⏭️ Siguiente: {proximo_pago}")
             
-            # ✅ CONTENIDO DE LA COLA
+            # CONTENIDO DE LA COLA
             contenido = "═" * 80 + "\n"
             contenido += "                       🏃 COLA DE PAGOS (FIFO)\n"
             contenido += "═" * 80 + "\n\n"
@@ -760,7 +760,7 @@ class InterfazEstructuras(ctk.CTkFrame):
     def actualizar_estadisticas(self):
         """Actualizar estadísticas generales"""
         try:
-            # ✅ ESTADÍSTICAS DE INVENTARIO
+            # ESTADÍSTICAS DE INVENTARIO
             productos = self.sistema.inventario.obtener_productos() if hasattr(self.sistema.inventario, 'obtener_productos') else []
             total_productos = len(productos)
             valor_inventario = sum(p.precio * p.stock for p in productos)
@@ -770,7 +770,7 @@ class InterfazEstructuras(ctk.CTkFrame):
             self.lbl_stat_valor_inv.configure(text=f"Valor: ${valor_inventario:,.2f}")
             self.lbl_stat_stock.configure(text=f"Stock: {stock_total:,}")
             
-            # ✅ ESTADÍSTICAS DE CARRITO
+            # ESTADÍSTICAS DE CARRITO
             items_carrito = self.sistema.carrito.obtener_cantidad_items() if hasattr(self.sistema.carrito, 'obtener_cantidad_items') else 0
             total_carrito = self.sistema.carrito.calcular_total() if hasattr(self.sistema.carrito, 'calcular_total') else 0
             unicos_carrito = len(self.sistema.carrito.obtener_items_agrupados()) if hasattr(self.sistema.carrito, 'obtener_items_agrupados') else 0
@@ -779,7 +779,7 @@ class InterfazEstructuras(ctk.CTkFrame):
             self.lbl_stat_total_cart.configure(text=f"Total: ${total_carrito:.2f}")
             self.lbl_stat_unique_cart.configure(text=f"Únicos: {unicos_carrito}")
             
-            # ✅ ESTADÍSTICAS DE ACTIVIDAD
+            # ESTADÍSTICAS DE ACTIVIDAD
             ordenes = self.obtener_elementos_seguros(self.sistema.pila_ordenes)
             pagos = self.obtener_elementos_seguros(self.sistema.cola_pagos)
             
@@ -798,14 +798,14 @@ class InterfazEstructuras(ctk.CTkFrame):
             self.lbl_stat_ultima_act.configure(text=f"Última: {ultima_actividad}")
             
         except Exception as e:
-            print(f"❌ Error actualizando estadísticas: {e}")
+            print(f"Error actualizando estadísticas: {e}")
     
     def actualizar_logs(self):
         """Actualizar logs del sistema"""
         try:
             timestamp = datetime.now().strftime("%H:%M:%S")
             
-            # ✅ INFORMACIÓN DE ÚLTIMA ACTUALIZACIÓN
+            # INFORMACIÓN DE ÚLTIMA ACTUALIZACIÓN
             log_entry = f"[{timestamp}] 🔄 Estructuras actualizadas\n"
             
             # Información del estado actual
@@ -816,7 +816,7 @@ class InterfazEstructuras(ctk.CTkFrame):
             
             log_entry += f"[{timestamp}] 📊 Estado: {productos_count} productos, {carrito_count} en carrito, {ordenes_count} órdenes, {pagos_count} pagos\n"
             
-            # ✅ MANTENER SOLO LAS ÚLTIMAS 50 LÍNEAS
+            # MANTENER SOLO LAS ÚLTIMAS 50 LÍNEAS
             current_content = self.text_logs.get("1.0", tk.END)
             lines = current_content.strip().split('\n')
             
@@ -832,8 +832,8 @@ class InterfazEstructuras(ctk.CTkFrame):
             self.text_logs.see(tk.END)
             
         except Exception as e:
-            print(f"❌ Error actualizando logs: {e}")
-    
+            print(f"Error actualizando logs: {e}")
+
     def iniciar_auto_refresh(self):
         """Iniciar auto-refresh si está habilitado"""
         if self.auto_refresh.get():
@@ -863,7 +863,7 @@ class InterfazEstructuras(ctk.CTkFrame):
         
         if respuesta:
             try:
-                # ✅ LIMPIAR ESTRUCTURAS DE MANERA SEGURA
+                # LIMPIAR ESTRUCTURAS DE MANERA SEGURA
                 if hasattr(self.sistema.pila_ordenes, 'vaciar'):
                     self.sistema.pila_ordenes.vaciar()
                 elif hasattr(self.sistema.pila_ordenes, 'limpiar'):
@@ -887,28 +887,28 @@ class InterfazEstructuras(ctk.CTkFrame):
                 log_entry = f"[{timestamp}] 🧹 Todas las estructuras limpiadas\n"
                 self.text_logs.insert(tk.END, log_entry)
                 
-                messagebox.showinfo("✅ Éxito", "Todas las estructuras han sido limpiadas correctamente")
+                messagebox.showinfo("Éxito", "Todas las estructuras han sido limpiadas correctamente")
                 
             except Exception as e:
-                messagebox.showerror("❌ Error", f"Error al limpiar estructuras: {str(e)}")
+                messagebox.showerror("Error", f"Error al limpiar estructuras: {str(e)}")
     
     def exportar_estructuras(self):
         """Exportar el estado actual de las estructuras"""
         try:
-            # ✅ CREAR DIRECTORIO DE EXPORTACIÓN
+            # CREAR DIRECTORIO DE EXPORTACIÓN
             project_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
             export_dir = os.path.join(project_dir, 'Exports')
             os.makedirs(export_dir, exist_ok=True)
-            
-            # ✅ NOMBRE DEL ARCHIVO
+
+            # NOMBRE DEL ARCHIVO
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             filename = f"estructuras_datos_{timestamp}.txt"
             filepath = os.path.join(export_dir, filename)
-            
-            # ✅ GENERAR CONTENIDO COMPLETO
+
+            # GENERAR CONTENIDO COMPLETO
             contenido = self.generar_reporte_completo()
-            
-            # ✅ GUARDAR ARCHIVO
+
+            # GUARDAR ARCHIVO
             with open(filepath, 'w', encoding='utf-8') as file:
                 file.write(contenido)
             
@@ -921,8 +921,8 @@ class InterfazEstructuras(ctk.CTkFrame):
             )
             
         except Exception as e:
-            messagebox.showerror("❌ Error", f"Error al exportar estructuras:\n{str(e)}")
-    
+            messagebox.showerror("Error", f"Error al exportar estructuras:\n{str(e)}")
+
     def generar_reporte_completo(self):
         """Generar reporte completo de todas las estructuras"""
         timestamp = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
@@ -943,7 +943,7 @@ class InterfazEstructuras(ctk.CTkFrame):
 
 """
         
-        # ✅ AGREGAR DATOS DEL INVENTARIO
+        # AGREGAR DATOS DEL INVENTARIO
         try:
             productos = self.sistema.inventario.obtener_productos() if hasattr(self.sistema.inventario, 'obtener_productos') else []
             contenido += f"Total de productos: {len(productos)}\n"
@@ -955,7 +955,7 @@ class InterfazEstructuras(ctk.CTkFrame):
         except Exception as e:
             contenido += f"Error obteniendo inventario: {e}\n"
         
-        # ✅ AGREGAR CARRITO
+        # AGREGAR CARRITO
         contenido += f"""
 ═══════════════════════════════════════════════════════════════════════════════
                                🛒 CARRITO ACTUAL
@@ -974,7 +974,7 @@ class InterfazEstructuras(ctk.CTkFrame):
         except Exception as e:
             contenido += f"Error obteniendo carrito: {e}\n"
         
-        # ✅ AGREGAR MÁS SECCIONES...
+        # AGREGAR MÁS SECCIONES...
         contenido += f"""
 ═══════════════════════════════════════════════════════════════════════════════
                               🗂️ PILA DE ÓRDENES
@@ -1020,19 +1020,19 @@ Sistema: Activo y funcionando
     def mostrar_simulacion(self):
         """Mostrar ventana de simulación de estructuras integrada"""
         try:
-            # ✅ ARREGLO: Crear simulación integrada sin importar archivo externo
+            # ARREGLO: Crear simulación integrada sin importar archivo externo
             ventana_sim = ctk.CTkToplevel(self)
             ventana_sim.title("🎮 Simulación de Estructuras de Datos")
             ventana_sim.geometry("900x700")
             ventana_sim.transient(self)
             ventana_sim.grab_set()  # Modal
             
-            # ✅ CREAR SIMULACIÓN COMPLETA INTEGRADA
+            # CREAR SIMULACIÓN COMPLETA INTEGRADA
             self.crear_simulacion_integrada(ventana_sim)
             
         except Exception as e:
-            messagebox.showerror("❌ Error", f"Error abriendo simulación: {str(e)}")
-    
+            messagebox.showerror("Error", f"Error abriendo simulación: {str(e)}")
+
     def crear_simulacion_integrada(self, ventana):
         """Crear simulación completa integrada"""
         # Frame principal
@@ -1040,8 +1040,8 @@ Sistema: Activo y funcionando
         main_frame.pack(fill="both", expand=True, padx=10, pady=10)
         main_frame.grid_columnconfigure((0, 1), weight=1)
         main_frame.grid_rowconfigure(2, weight=1)
-        
-        # ✅ TÍTULO
+
+        # TÍTULO
         titulo = ctk.CTkLabel(
             main_frame,
             text="🎮 Simulador de Estructuras de Datos",
@@ -1049,8 +1049,8 @@ Sistema: Activo y funcionando
             text_color="#1f2937"
         )
         titulo.grid(row=0, column=0, columnspan=2, pady=20)
-        
-        # ✅ PANEL DE PILA (IZQUIERDA)
+
+        # PANEL DE PILA (IZQUIERDA)
         pila_frame = ctk.CTkFrame(main_frame, fg_color="#fef3c7")
         pila_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
         
@@ -1096,8 +1096,8 @@ Sistema: Activo y funcionando
             fg_color="#fef3c7"
         )
         self.pila_visual.pack(fill="both", expand=True, padx=10, pady=10)
-        
-        # ✅ PANEL DE COLA (DERECHA)
+
+        # PANEL DE COLA (DERECHA)
         cola_frame = ctk.CTkFrame(main_frame, fg_color="#e0f2fe")
         cola_frame.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
         
@@ -1143,8 +1143,8 @@ Sistema: Activo y funcionando
             fg_color="#e0f2fe"
         )
         self.cola_visual.pack(fill="both", expand=True, padx=10, pady=10)
-        
-        # ✅ PANEL DE LOGS (ABAJO)
+
+        # PANEL DE LOGS (ABAJO)
         logs_frame = ctk.CTkFrame(main_frame)
         logs_frame.grid(row=2, column=0, columnspan=2, padx=10, pady=10, sticky="nsew")
         
@@ -1160,8 +1160,8 @@ Sistema: Activo y funcionando
             font=("Courier New", 10)
         )
         self.sim_logs.pack(fill="both", expand=True, padx=10, pady=10)
-        
-        # ✅ PANEL DE BOTONES
+
+        # PANEL DE BOTONES
         buttons_frame = ctk.CTkFrame(main_frame)
         buttons_frame.grid(row=3, column=0, columnspan=2, pady=10)
         
@@ -1192,8 +1192,8 @@ Sistema: Activo y funcionando
             command=ventana.destroy,
             fg_color="#6b7280"
         ).pack(side="left", padx=10)
-        
-        # ✅ INICIALIZAR VISUALIZACIÓN
+
+        # INICIALIZAR VISUALIZACIÓN
         self.actualizar_simulacion()
         self.log_simulacion("🎮 Simulador iniciado - ¡Prueba las operaciones!")
     
@@ -1203,8 +1203,8 @@ Sistema: Activo y funcionando
             valor = self.pila_entry.get().strip()
             if not valor:
                 valor = f"Orden_{len(self.obtener_elementos_seguros(self.sistema.pila_ordenes)) + 1}"
-            
-            # ✅ CREAR ORDEN SIMULADA
+
+            # CREAR ORDEN SIMULADA
             from datetime import datetime
             orden_sim = type('Orden', (), {
                 'id': valor,
@@ -1224,7 +1224,7 @@ Sistema: Activo y funcionando
             self.pila_entry.delete(0, 'end')
             
         except Exception as e:
-            self.log_simulacion(f"❌ Error en PUSH: {e}")
+            self.log_simulacion(f"Error en PUSH: {e}")
     
     def simular_pop(self):
         """Simular operación POP en la pila"""
@@ -1244,8 +1244,8 @@ Sistema: Activo y funcionando
             self.actualizar_simulacion()
             
         except Exception as e:
-            self.log_simulacion(f"❌ Error en POP: {e}")
-    
+            self.log_simulacion(f"Error en POP: {e}")
+
     def simular_enqueue(self):
         """Simular operación ENQUEUE en la cola"""
         try:
@@ -1274,7 +1274,7 @@ Sistema: Activo y funcionando
             self.cola_entry.delete(0, 'end')
             
         except Exception as e:
-            self.log_simulacion(f"❌ Error en ENQUEUE: {e}")
+            self.log_simulacion(f"Error en ENQUEUE: {e}")
     
     def simular_dequeue(self):
         """Simular operación DEQUEUE en la cola"""
@@ -1294,12 +1294,12 @@ Sistema: Activo y funcionando
             self.actualizar_simulacion()
             
         except Exception as e:
-            self.log_simulacion(f"❌ Error en DEQUEUE: {e}")
-    
+            self.log_simulacion(f"Error en DEQUEUE: {e}")
+
     def actualizar_simulacion(self):
         """Actualizar visualización de la simulación"""
         try:
-            # ✅ ACTUALIZAR PILA
+            # ACTUALIZAR PILA
             self.pila_visual.delete("1.0", tk.END)
             ordenes = self.obtener_elementos_seguros(self.sistema.pila_ordenes)
             
@@ -1318,8 +1318,8 @@ Sistema: Activo y funcionando
             pila_content += "╚═════════════════════════╝\n"
             
             self.pila_visual.insert("1.0", pila_content)
-            
-            # ✅ ACTUALIZAR COLA
+
+            # ACTUALIZAR COLA
             self.cola_visual.delete("1.0", tk.END)
             pagos = self.obtener_elementos_seguros(self.sistema.cola_pagos)
             
@@ -1338,13 +1338,13 @@ Sistema: Activo y funcionando
             cola_content += "╚═════════════════════════╝\n"
             
             self.cola_visual.insert("1.0", cola_content)
-            
-            # ✅ ACTUALIZAR ESTRUCTURAS PRINCIPALES
+
+            # ACTUALIZAR ESTRUCTURAS PRINCIPALES
             self.actualizar_visualizaciones()
             
         except Exception as e:
-            self.log_simulacion(f"❌ Error actualizando simulación: {e}")
-    
+            self.log_simulacion(f"Error actualizando simulación: {e}")
+
     def limpiar_simulacion(self):
         """Limpiar todas las estructuras de la simulación"""
         try:
@@ -1364,8 +1364,8 @@ Sistema: Activo y funcionando
             self.actualizar_simulacion()
             
         except Exception as e:
-            self.log_simulacion(f"❌ Error limpiando: {e}")
-    
+            self.log_simulacion(f"Error limpiando: {e}")
+
     def ejecutar_demo_automatico(self):
         """Ejecutar demostración automática"""
         try:
@@ -1387,8 +1387,8 @@ Sistema: Activo y funcionando
                 self.after(i * 1000, lambda op=operacion, val=valor: self.ejecutar_operacion_demo(op, val))
             
         except Exception as e:
-            self.log_simulacion(f"❌ Error en demo: {e}")
-    
+            self.log_simulacion(f"Error en demo: {e}")
+
     def ejecutar_operacion_demo(self, operacion, valor):
         """Ejecutar una operación específica del demo"""
         try:
@@ -1406,8 +1406,8 @@ Sistema: Activo y funcionando
                 self.simular_dequeue()
                 
         except Exception as e:
-            self.log_simulacion(f"❌ Error en operación demo {operacion}: {e}")
-    
+            self.log_simulacion(f"Error en operación demo {operacion}: {e}")
+
     def log_simulacion(self, mensaje):
         """Agregar mensaje al log de simulación"""
         try:
@@ -1421,15 +1421,15 @@ Sistema: Activo y funcionando
     
     def cerrar_ventana(self):
         """Cerrar la ventana de estructuras"""
-        # ✅ CANCELAR AUTO-REFRESH ANTES DE CERRAR
+        # CANCELAR AUTO-REFRESH ANTES DE CERRAR
         if self.refresh_job:
             self.after_cancel(self.refresh_job)
-        
-        # ✅ NOTIFICAR AL LOG
+
+        # NOTIFICAR AL LOG
         timestamp = datetime.now().strftime("%H:%M:%S")
         print(f"[{timestamp}] 🚪 Cerrando visualizador de estructuras")
-        
-        # ✅ CERRAR VENTANA
+
+        # CERRAR VENTANA
         if hasattr(self.master, 'destroy'):
             self.master.destroy()
         else:
@@ -1443,7 +1443,7 @@ Sistema: Activo y funcionando
         except:
             pass
 
-# ✅ FUNCIÓN AUXILIAR PARA CREAR VENTANA INDEPENDIENTE
+# FUNCIÓN AUXILIAR PARA CREAR VENTANA INDEPENDIENTE
 def mostrar_visualizador_estructuras(sistema_ecommerce):
     """Función para mostrar el visualizador en una ventana independiente"""
     try:
@@ -1451,14 +1451,14 @@ def mostrar_visualizador_estructuras(sistema_ecommerce):
         ventana.title("📊 Visualizador de Estructuras de Datos")
         ventana.geometry("1200x800")
         ventana.minsize(800, 600)
-        
-        # ✅ CONFIGURAR ÍCONO Y TEMA
+
+        # CONFIGURAR ÍCONO Y TEMA
         ventana.resizable(True, True)
         
         visualizador = InterfazEstructuras(ventana, sistema_ecommerce)
         visualizador.pack(fill="both", expand=True, padx=10, pady=10)
         
-        # ✅ CENTRAR VENTANA
+        # CENTRAR VENTANA
         ventana.update_idletasks()
         x = (ventana.winfo_screenwidth() // 2) - (1200 // 2)
         y = (ventana.winfo_screenheight() // 2) - (800 // 2)
@@ -1467,7 +1467,7 @@ def mostrar_visualizador_estructuras(sistema_ecommerce):
         return ventana
         
     except Exception as e:
-        print(f"❌ Error creando visualizador: {e}")
+        print(f"Error creando visualizador: {e}")
         import traceback
         traceback.print_exc()
         return None

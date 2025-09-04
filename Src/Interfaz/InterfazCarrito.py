@@ -38,7 +38,7 @@ def obtener_directorio_proyecto():
         return os.getcwd()
         
     except Exception as e:
-        print(f"❌ Error determinando directorio del proyecto: {e}")
+        print(f"Error determinando directorio del proyecto: {e}")
         return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def obtener_directorio_imagenes(tipo="productos"):
@@ -63,7 +63,7 @@ def obtener_directorio_imagenes(tipo="productos"):
         return ruta_estandar
         
     except Exception as e:
-        print(f"❌ Error obteniendo directorio de imágenes: {e}")
+        print(f"Error obteniendo directorio de imágenes: {e}")
         return None
 
 # Configurar rutas
@@ -109,7 +109,7 @@ class ItemCarrito(ctk.CTkFrame):
             self.crear_panel_derecho(main_frame)
             
         except Exception as e:
-            print(f"❌ Error creando contenido item carrito: {e}")
+            print(f"Error creando contenido item carrito: {e}")
             self.crear_contenido_fallback()
     
     def crear_imagen_producto(self, parent):
@@ -139,7 +139,7 @@ class ItemCarrito(ctk.CTkFrame):
                 placeholder.pack(expand=True)
                 
         except Exception as e:
-            print(f"❌ Error creando imagen: {e}")
+            print(f"Error creando imagen: {e}")
             # Crear placeholder simple
             placeholder_frame = ctk.CTkFrame(parent, width=100, height=100, 
                                            corner_radius=10, fg_color="#f3f4f6")
@@ -181,7 +181,7 @@ class ItemCarrito(ctk.CTkFrame):
             return self._photo_image
             
         except Exception as e:
-            print(f"❌ Error cargando imagen del producto: {e}")
+            print(f"Error cargando imagen del producto: {e}")
             return None
     
     def buscar_imagen(self, directorio, nombre_imagen):
@@ -211,7 +211,7 @@ class ItemCarrito(ctk.CTkFrame):
             return None
             
         except Exception as e:
-            print(f"❌ Error buscando imagen: {e}")
+            print(f"Error buscando imagen: {e}")
             return None
     
     def procesar_imagen(self, imagen, tamaño_objetivo):
@@ -249,7 +249,7 @@ class ItemCarrito(ctk.CTkFrame):
             return imagen_redim
             
         except Exception as e:
-            print(f"❌ Error procesando imagen: {e}")
+            print(f"Error procesando imagen: {e}")
             return imagen.resize(tamaño_objetivo, Image.Resampling.LANCZOS)
     
     def crear_info_producto(self, parent):
@@ -298,7 +298,7 @@ class ItemCarrito(ctk.CTkFrame):
             precio_unitario_label.pack(anchor="w", pady=(0, 10))
             
         except Exception as e:
-            print(f"❌ Error creando info producto: {e}")
+            print(f"Error creando info producto: {e}")
     
     def crear_controles_cantidad(self, parent):
         """Crear controles de cantidad con diseño moderno"""
@@ -361,7 +361,7 @@ class ItemCarrito(ctk.CTkFrame):
             self.actualizar_botones_cantidad()
             
         except Exception as e:
-            print(f"❌ Error creando controles cantidad: {e}")
+            print(f"Error creando controles cantidad: {e}")
     
     def crear_panel_derecho(self, parent):
         """Crear panel derecho con precio total y botón eliminar"""
@@ -408,7 +408,7 @@ class ItemCarrito(ctk.CTkFrame):
             self.btn_eliminar.pack(pady=(0, 15), padx=5)
             
         except Exception as e:
-            print(f"❌ Error creando panel derecho: {e}")
+            print(f"Error creando panel derecho: {e}")
     
     def aumentar_cantidad(self):
         """Aumentar cantidad del producto"""
@@ -420,10 +420,10 @@ class ItemCarrito(ctk.CTkFrame):
                 if self.on_update_callback:
                     self.on_update_callback()
             else:
-                print("⚠️ No se puede agregar más, stock insuficiente")
+                print("No se puede agregar más, stock insuficiente")
                 
         except Exception as e:
-            print(f"❌ Error aumentando cantidad: {e}")
+            print(f"Error aumentando cantidad: {e}")
     
     def disminuir_cantidad(self):
         """Disminuir cantidad del producto"""
@@ -439,7 +439,7 @@ class ItemCarrito(ctk.CTkFrame):
                 self.eliminar_item()
                 
         except Exception as e:
-            print(f"❌ Error disminuyendo cantidad: {e}")
+            print(f"Error disminuyendo cantidad: {e}")
     
     def eliminar_item(self):
         """Eliminar item completo del carrito"""
@@ -451,10 +451,10 @@ class ItemCarrito(ctk.CTkFrame):
             if self.on_update_callback:
                 self.on_update_callback()
                 
-            print(f"🗑️ Producto eliminado del carrito: {self.item_carrito.producto.nombre}")
+            print(f"Producto eliminado del carrito: {self.item_carrito.producto.nombre}")
             
         except Exception as e:
-            print(f"❌ Error eliminando item: {e}")
+            print(f"Error eliminando item: {e}")
     
     def actualizar_display(self):
         """Actualizar displays de cantidad y precio"""
@@ -472,7 +472,7 @@ class ItemCarrito(ctk.CTkFrame):
             self.actualizar_botones_cantidad()
             
         except Exception as e:
-            print(f"❌ Error actualizando display: {e}")
+            print(f"Error actualizando display: {e}")
     
     def actualizar_botones_cantidad(self):
         """Actualizar estado de botones según stock y cantidad"""
@@ -492,21 +492,21 @@ class ItemCarrito(ctk.CTkFrame):
                     self.btn_menos.configure(text="−", fg_color="#ef4444")
                     
         except Exception as e:
-            print(f"❌ Error actualizando botones: {e}")
+            print(f"Error actualizando botones: {e}")
     
     def crear_contenido_fallback(self):
         """Crear contenido básico en caso de error"""
         try:
             error_label = ctk.CTkLabel(
                 self,
-                text=f"❌ Error cargando: {self.item_carrito.producto.nombre}",
+                text=f"Error cargando: {self.item_carrito.producto.nombre}",
                 font=("Arial", 14),
                 text_color="#dc2626"
             )
             error_label.pack(pady=20)
             
         except Exception as e:
-            print(f"❌ Error crítico en fallback: {e}")
+            print(f"Error crítico en fallback: {e}")
     
     def destroy(self):
         """Limpiar referencias antes de destruir"""
@@ -548,7 +548,7 @@ class InterfazCarrito(ctk.CTkFrame):
             self.crear_footer()
             
         except Exception as e:
-            print(f"❌ Error creando interfaz carrito: {e}")
+            print(f"Error creando interfaz carrito: {e}")
     
     def crear_header(self):
         """Crear header del carrito"""
@@ -580,7 +580,7 @@ class InterfazCarrito(ctk.CTkFrame):
             self.contador_items.pack(side="right", pady=(5, 0))
             
         except Exception as e:
-            print(f"❌ Error creando header: {e}")
+            print(f"Error creando header: {e}")
     
     def crear_contenedor_scroll(self):
         """Crear contenedor scrollable para items"""
@@ -600,7 +600,7 @@ class InterfazCarrito(ctk.CTkFrame):
             self.items_container.pack(fill="both", expand=True, padx=10, pady=10)
             
         except Exception as e:
-            print(f"❌ Error creando contenedor scroll: {e}")
+            print(f"Error creando contenedor scroll: {e}")
     
     def crear_footer(self):
         """Crear footer con resumen y acciones"""
@@ -622,7 +622,7 @@ class InterfazCarrito(ctk.CTkFrame):
             self.crear_panel_acciones(footer_content)
             
         except Exception as e:
-            print(f"❌ Error creando footer: {e}")
+            print(f"Error creando footer: {e}")
     
     def crear_panel_resumen(self, parent):
         """Crear panel de resumen del carrito"""
@@ -667,7 +667,7 @@ class InterfazCarrito(ctk.CTkFrame):
             self.total_precio_label.pack(side="left", padx=15)
             
         except Exception as e:
-            print(f"❌ Error creando panel resumen: {e}")
+            print(f"Error creando panel resumen: {e}")
     
     def crear_panel_acciones(self, parent):
         """Crear panel de acciones del carrito"""
@@ -719,7 +719,7 @@ class InterfazCarrito(ctk.CTkFrame):
             self.btn_checkout.pack(side="left")
             
         except Exception as e:
-            print(f"❌ Error creando panel acciones: {e}")
+            print(f"Error creando panel acciones: {e}")
     
     def actualizar_carrito(self):
         """Actualizar visualización del carrito"""
@@ -739,7 +739,7 @@ class InterfazCarrito(ctk.CTkFrame):
             self.actualizar_resumen()
             
         except Exception as e:
-            print(f"❌ Error actualizando carrito: {e}")
+            print(f"Error actualizando carrito: {e}")
     
     def limpiar_items_anteriores(self):
         """Limpiar widgets de items anteriores"""
@@ -761,7 +761,7 @@ class InterfazCarrito(ctk.CTkFrame):
                     print(f"Error limpiando widget contenedor: {e}")
             
         except Exception as e:
-            print(f"❌ Error limpiando items anteriores: {e}")
+            print(f"Error limpiando items anteriores: {e}")
     
     def mostrar_carrito_vacio(self):
         """Mostrar mensaje cuando el carrito está vacío"""
@@ -813,7 +813,7 @@ class InterfazCarrito(ctk.CTkFrame):
             btn_explorar.pack(pady=(0, 50))
             
         except Exception as e:
-            print(f"❌ Error mostrando carrito vacío: {e}")
+            print(f"Error mostrando carrito vacío: {e}")
     
     def mostrar_items_carrito(self, items):
         """Mostrar items del carrito"""
@@ -831,10 +831,10 @@ class InterfazCarrito(ctk.CTkFrame):
                 # Agregar a lista de widgets
                 self.items_widgets.append(item_widget)
             
-            print(f"✅ Mostrando {len(items)} items en el carrito")
+            print(f"Mostrando {len(items)} items en el carrito")
             
         except Exception as e:
-            print(f"❌ Error mostrando items del carrito: {e}")
+            print(f"Error mostrando items del carrito: {e}")
     
     def actualizar_resumen(self):
         """Actualizar resumen del carrito"""
@@ -869,7 +869,7 @@ class InterfazCarrito(ctk.CTkFrame):
                     self.btn_limpiar.configure(state="disabled", fg_color="#d1d5db")
             
         except Exception as e:
-            print(f"❌ Error actualizando resumen: {e}")
+            print(f"Error actualizando resumen: {e}")
     
     def limpiar_carrito(self):
         """Limpiar todos los productos del carrito"""
@@ -881,7 +881,7 @@ class InterfazCarrito(ctk.CTkFrame):
             self.mostrar_confirmacion_limpiar()
             
         except Exception as e:
-            print(f"❌ Error limpiando carrito: {e}")
+            print(f"Error limpiando carrito: {e}")
     
     def mostrar_confirmacion_limpiar(self):
         """Mostrar ventana de confirmación para limpiar carrito"""
@@ -955,7 +955,7 @@ class InterfazCarrito(ctk.CTkFrame):
             btn_confirmar.pack(side="left")
             
         except Exception as e:
-            print(f"❌ Error mostrando confirmación: {e}")
+            print(f"Error mostrando confirmación: {e}")
     
     def confirmar_limpiar_carrito(self, ventana_confirmacion):
         """Confirmar y ejecutar limpieza del carrito"""
@@ -973,10 +973,10 @@ class InterfazCarrito(ctk.CTkFrame):
             if hasattr(self.master, 'actualizar_contador_carrito'):
                 self.master.actualizar_contador_carrito()
             
-            print("🗑️ Carrito vaciado exitosamente")
+            print("Carrito vaciado exitosamente")
             
         except Exception as e:
-            print(f"❌ Error confirmando limpiar carrito: {e}")
+            print(f"Error confirmando limpiar carrito: {e}")
     
     def continuar_comprando(self):
         """Volver a la vista de compras"""
@@ -984,25 +984,25 @@ class InterfazCarrito(ctk.CTkFrame):
             if hasattr(self.master, 'mostrar_compras'):
                 self.master.mostrar_compras()
             else:
-                print("⚠️ No se pudo acceder a la función mostrar_compras")
+                print("No se pudo acceder a la función mostrar_compras")
             
         except Exception as e:
-            print(f"❌ Error continuando compras: {e}")
+            print(f"Error continuando compras: {e}")
     
     def proceder_checkout(self):
         """Proceder al checkout"""
         try:
             if self.carrito.obtener_cantidad_items() == 0:
-                print("⚠️ No se puede proceder al checkout con carrito vacío")
+                print("No se puede proceder al checkout con carrito vacío")
                 return
             
             if hasattr(self.master, 'mostrar_checkout'):
                 self.master.mostrar_checkout()
             else:
-                print("⚠️ No se pudo acceder a la función mostrar_checkout")
+                print("No se pudo acceder a la función mostrar_checkout")
             
         except Exception as e:
-            print(f"❌ Error procediendo al checkout: {e}")
+            print(f" Error procediendo al checkout: {e}")
     
     def destroy(self):
         """Limpiar recursos antes de destruir"""

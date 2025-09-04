@@ -437,14 +437,14 @@ class LoginApp(CTk):
         try:
             if self.callback_login_exitoso and not self._callback_ejecutado:
                 self._callback_ejecutado = True
-                print(f"🔄 Ejecutando callback para {cliente.nombre}")
+                print(f"Ejecutando callback para {cliente.nombre}")
                 self.callback_login_exitoso(cliente, self.sistema_login)
             
             # Cerrar ventana de login
             self.destroy()
             
         except Exception as e:
-            print(f"❌ Error ejecutando callback: {e}")
+            print(f"Error ejecutando callback: {e}")
             try:
                 self.destroy()
             except:
@@ -506,7 +506,7 @@ def mostrar_login(callback_login_exitoso=None):
         # Configurar CustomTkinter para login (configuración ligera)
         set_appearance_mode("light")
         set_default_color_theme("blue")
-        print("🔐 Iniciando ventana de login...")
+        print("Iniciando ventana de login...")
         # Siempre crear una nueva instancia de LoginApp y sus imágenes
         app = LoginApp(callback_login_exitoso)
         # Forzar garbage collection para limpiar imágenes viejas
@@ -521,7 +521,7 @@ def mostrar_login(callback_login_exitoso=None):
             app.mainloop()
             return app.obtener_cliente()
     except Exception as e:
-        print(f"❌ Error en mostrar_login: {e}")
+        print(f"Error en mostrar_login: {e}")
         import traceback
         traceback.print_exc()
         return None
@@ -529,12 +529,12 @@ def mostrar_login(callback_login_exitoso=None):
 if __name__ == "__main__":
     # Prueba independiente
     def callback_prueba(cliente, sistema_login):
-        print(f"✅ Login exitoso: {cliente.nombre}")
-        print(f"📧 Email: {cliente.email}")
-        print(f"👤 Rol: {sistema_login.obtener_rol_usuario()}")
+        print(f"Login exitoso: {cliente.nombre}")
+        print(f"Email: {cliente.email}")
+        print(f"Rol: {sistema_login.obtener_rol_usuario()}")
     
     cliente = mostrar_login(callback_prueba)
     if cliente:
-        print(f"\n🎉 Usuario autenticado: {cliente.nombre}")
+        print(f"\n Usuario autenticado: {cliente.nombre}")
     else:
-        print("\n❌ Login cancelado")
+        print("\nLogin cancelado")

@@ -279,7 +279,7 @@ class InterfazCheckout(ctk.CTkFrame):
                 self.entry_num_tarjeta.icursor(len(formateado))
                 
         except Exception as e:
-            print(f"❌ Error formateando tarjeta: {e}")
+            print(f"Error formateando tarjeta: {e}")
     
     def crear_resumen(self, parent):
         """Crear panel de resumen SIN botón de pago"""
@@ -491,7 +491,7 @@ class InterfazCheckout(ctk.CTkFrame):
             mes = self.combo_mes.get().strip()
             anio = self.combo_anio.get().strip()
             
-            print(f"🔍 DEBUG Validación:")
+            print(f"DEBUG Validación:")
             print(f"   - Número tarjeta: '{num_tarjeta}' (len: {len(num_tarjeta)})")
             print(f"   - Titular: '{titular}' (len: {len(titular)})")
             print(f"   - CVV: '{cvv}' (len: {len(cvv)})")
@@ -534,9 +534,9 @@ class InterfazCheckout(ctk.CTkFrame):
             
             # Debug de errores
             if errores:
-                print(f"❌ Errores encontrados: {errores}")
+                print(f"Errores encontrados: {errores}")
             else:
-                print("✅ Validación exitosa")
+                print("Validación exitosa")
             
             # Mostrar errores si los hay
             if errores:
@@ -546,7 +546,7 @@ class InterfazCheckout(ctk.CTkFrame):
             return True
             
         except Exception as e:
-            print(f"❌ Error en validación: {e}")
+            print(f"Error en validación: {e}")
             messagebox.showerror("Error", "Error validando el formulario")
             return False
     
@@ -563,7 +563,7 @@ class InterfazCheckout(ctk.CTkFrame):
             # Cambiar estado del botón
             self.procesando = True
             self.btn_finalizar.configure(
-                text="🔄 Procesando Pago...", 
+                text="Procesando Pago...", 
                 state="disabled",
                 fg_color="#6b7280"
             )
@@ -575,7 +575,7 @@ class InterfazCheckout(ctk.CTkFrame):
             self.after(1000, self._procesar_pago)
             
         except Exception as e:
-            print(f"❌ Error iniciando procesamiento: {e}")
+            print(f"Error iniciando procesamiento: {e}")
             self._restaurar_boton()
             messagebox.showerror("Error", f"Error procesando la compra: {str(e)}")
     
@@ -666,7 +666,7 @@ class InterfazCheckout(ctk.CTkFrame):
                 try:
                     self.sistema.pila_ordenes.push(recibo)
                 except Exception as e:
-                    print(f"❌ Error agregando orden a pila_ordenes: {e}")
+                    print(f"Error agregando orden a pila_ordenes: {e}")
             self.guardar_pago_csv({
                 'id': pago.id_pago,
                 'orden_id': self.orden_id,
@@ -713,7 +713,7 @@ class InterfazCheckout(ctk.CTkFrame):
 
             self.mostrar_confirmacion()
         except Exception as e:
-            print(f"❌ Error procesando pago: {e}")
+            print(f"Error procesando pago: {e}")
             import traceback
             traceback.print_exc()
             self._restaurar_boton()
@@ -878,7 +878,7 @@ class InterfazCheckout(ctk.CTkFrame):
             self.ir_a_compras()
     
     def guardar_orden_csv(self, orden_data):
-        """✅ GUARDAR ORDEN EN ARCHIVO CSV"""
+        """GUARDAR ORDEN EN ARCHIVO CSV"""
         try:
             import csv
             import os
@@ -919,11 +919,11 @@ class InterfazCheckout(ctk.CTkFrame):
             print(f"📁 Orden {orden_data['id']} guardada en ordenes.csv")
             
         except Exception as e:
-            print(f"❌ Error guardando orden en CSV: {e}")
+            print(f"Error guardando orden en CSV: {e}")
             raise
     
     def guardar_pago_csv(self, pago_data):
-        """✅ GUARDAR PAGO EN ARCHIVO CSV"""
+        """GUARDAR PAGO EN ARCHIVO CSV"""
         try:
             import csv
             import os
@@ -951,11 +951,11 @@ class InterfazCheckout(ctk.CTkFrame):
             print(f"💳 Pago {pago_data['id']} guardado en pagos.csv")
             
         except Exception as e:
-            print(f"❌ Error guardando pago en CSV: {e}")
+            print(f"Error guardando pago en CSV: {e}")
             raise
     
     def guardar_transaccion_csv(self, orden_data, pago_data):
-        """✅ GUARDAR TRANSACCIÓN COMPLETA EN ARCHIVO CSV"""
+        """GUARDAR TRANSACCIÓN COMPLETA EN ARCHIVO CSV"""
         try:
             import csv
             import os
@@ -991,9 +991,9 @@ class InterfazCheckout(ctk.CTkFrame):
                     'productos_cantidad': orden_data['cantidad_productos']
                 }
                 writer.writerow(transaccion_data)
-                
-            print(f"📋 Transacción completa guardada en transacciones.csv")
-            
+
+            print(f"Transacción completa guardada en transacciones.csv")
+
         except Exception as e:
-            print(f"❌ Error guardando transacción en CSV: {e}")
+            print(f"Error guardando transacción en CSV: {e}")
             raise

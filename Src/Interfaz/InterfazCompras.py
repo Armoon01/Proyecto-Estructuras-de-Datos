@@ -45,11 +45,11 @@ def obtener_directorio_proyecto():
             return base_dir
             
         # Si nada funciona, usar directorio actual
-        print("⚠️ No se pudo determinar directorio del proyecto, usando directorio actual")
+        print("No se pudo determinar directorio del proyecto, usando directorio actual")
         return os.getcwd()
         
     except Exception as e:
-        print(f"❌ Error determinando directorio del proyecto: {e}")
+        print(f"Error determinando directorio del proyecto: {e}")
         return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def obtener_directorio_imagenes(tipo="productos"):
@@ -68,17 +68,17 @@ def obtener_directorio_imagenes(tipo="productos"):
         
         for ruta in rutas_posibles:
             if os.path.exists(ruta):
-                print(f"📁 Directorio de imágenes encontrado: {ruta}")
+                print(f"Directorio de imágenes encontrado: {ruta}")
                 return ruta
         
         # Si no existe, crear el directorio estándar
         ruta_estandar = os.path.join(proyecto_dir, 'Src', 'Images', tipo)
         os.makedirs(ruta_estandar, exist_ok=True)
-        print(f"📁 Directorio de imágenes creado: {ruta_estandar}")
+        print(f"Directorio de imágenes creado: {ruta_estandar}")
         return ruta_estandar
         
     except Exception as e:
-        print(f"❌ Error obteniendo directorio de imágenes: {e}")
+        print(f"Error obteniendo directorio de imágenes: {e}")
         return None
 
 # Configurar ruta base del proyecto de manera robusta
@@ -105,7 +105,7 @@ class ProductoCard(ctk.CTkFrame):
         self.carrito = carrito
         self.on_agregar = on_agregar
         
-        # ✅ ARREGLO: Diccionario para mantener referencias de imágenes
+        # ARREGLO: Diccionario para mantener referencias de imágenes
         self._imagenes_refs = {}
         self._widgets_refs = {}  # Para mantener referencias de widgets
         self._imagen_cargada = False
@@ -117,9 +117,9 @@ class ProductoCard(ctk.CTkFrame):
         # Crear contenido con manejo de errores robusto
         try:
             self.crear_contenido()
-            print(f"✅ ProductoCard creada exitosamente: {self.producto.nombre}")
+            print(f"ProductoCard creada exitosamente: {self.producto.nombre}")
         except Exception as e:
-            print(f"❌ Error creando ProductoCard para {self.producto.nombre}: {e}")
+            print(f"Error creando ProductoCard para {self.producto.nombre}: {e}")
             import traceback
             traceback.print_exc()
             # Crear una tarjeta básica en caso de error
@@ -132,7 +132,7 @@ class ProductoCard(ctk.CTkFrame):
             productos_dir = IMAGES_DIR
             
             if not productos_dir or not os.path.exists(productos_dir):
-                print(f"❌ Directorio de productos no encontrado: {productos_dir}")
+                print(f"Directorio de productos no encontrado: {productos_dir}")
                 return self.crear_imagen_fallback()
             
             # Obtener nombre de imagen del producto
@@ -150,14 +150,14 @@ class ProductoCard(ctk.CTkFrame):
                 imagen_nombre = self.producto.imagen
             
             if not imagen_nombre:
-                print(f"⚠️ Producto {self.producto.nombre} no tiene imagen asignada")
+                print(f"Producto {self.producto.nombre} no tiene imagen asignada")
                 return self.crear_imagen_fallback()
             
             # Verificar cache global primero
             cache_key = f"{imagen_nombre}_{260}x{180}"
             if cache_key in InterfazCompras._cache_imagenes_global:
-                print(f"🗄️ Imagen desde cache: {imagen_nombre}")
-                # ✅ ARREGLO: Mantener referencia local también
+                print(f"Imagen desde cache: {imagen_nombre}")
+                # ARREGLO: Mantener referencia local también
                 imagen_cache = InterfazCompras._cache_imagenes_global[cache_key]
                 self._imagenes_refs[cache_key] = imagen_cache
                 return imagen_cache
@@ -166,7 +166,7 @@ class ProductoCard(ctk.CTkFrame):
             imagen_encontrada = self.buscar_imagen_multiple(productos_dir, imagen_nombre)
             
             if not imagen_encontrada:
-                print(f"❌ No se encontró imagen para: {self.producto.nombre}")
+                print(f"No se encontró imagen para: {self.producto.nombre}")
                 return self.crear_imagen_fallback()
             
             # Cargar y procesar imagen
@@ -174,7 +174,7 @@ class ProductoCard(ctk.CTkFrame):
             img_pil = self.redimensionar_imagen(img_pil, (260, 180))
             img_pil = self.convertir_a_rgb(img_pil)
             
-            # ✅ ARREGLO: Crear CTkImage y mantener múltiples referencias
+            # ARREGLO: Crear CTkImage y mantener múltiples referencias
             ctk_image = ctk.CTkImage(img_pil, size=(260, 180))
             
             # Cache global
@@ -182,11 +182,11 @@ class ProductoCard(ctk.CTkFrame):
             # Cache local en la tarjeta
             self._imagenes_refs[cache_key] = ctk_image
             
-            print(f"✅ Imagen cargada y cacheada: {os.path.basename(imagen_encontrada)}")
+            print(f"Imagen cargada y cacheada: {os.path.basename(imagen_encontrada)}")
             return ctk_image
             
         except Exception as e:
-            print(f"❌ Error cargando imagen para {self.producto.nombre}: {e}")
+            print(f"Error cargando imagen para {self.producto.nombre}: {e}")
             return self.crear_imagen_fallback()
     
     def buscar_imagen_multiple(self, directorio, nombre_imagen):
@@ -208,7 +208,7 @@ class ProductoCard(ctk.CTkFrame):
                 if '.' in nombre_base:
                     ruta_test = os.path.join(directorio, nombre_base)
                     if os.path.exists(ruta_test):
-                        print(f"🎯 Imagen encontrada (exacta): {ruta_test}")
+                        print(f"Imagen encontrada (exacta): {ruta_test}")
                         return ruta_test
                 
                 # Luego buscar agregando extensiones
@@ -216,7 +216,7 @@ class ProductoCard(ctk.CTkFrame):
                 for ext in extensiones:
                     ruta_test = os.path.join(directorio, nombre_sin_ext + ext)
                     if os.path.exists(ruta_test):
-                        print(f"🎯 Imagen encontrada (con extensión): {ruta_test}")
+                        print(f"Imagen encontrada (con extensión): {ruta_test}")
                         return ruta_test
             
             # Búsqueda fuzzy - buscar archivos que contengan parte del nombre
@@ -231,13 +231,13 @@ class ProductoCard(ctk.CTkFrame):
                     if len(palabras_producto) > 1:
                         if any(palabra in archivo_limpio for palabra in palabras_producto if len(palabra) > 3):
                             ruta_test = os.path.join(directorio, archivo)
-                            print(f"🎯 Imagen encontrada (fuzzy): {ruta_test}")
+                            print(f"Imagen encontrada (fuzzy): {ruta_test}")
                             return ruta_test
             
             return None
             
         except Exception as e:
-            print(f"❌ Error en búsqueda múltiple: {e}")
+            print(f"Error en búsqueda múltiple: {e}")
             return None
     
     def convertir_a_rgb(self, imagen):
@@ -256,7 +256,7 @@ class ProductoCard(ctk.CTkFrame):
             return imagen
             
         except Exception as e:
-            print(f"❌ Error convirtiendo imagen: {e}")
+            print(f"Error convirtiendo imagen: {e}")
             return imagen.convert('RGB')
     
     def normalizar_nombre_archivo(self, nombre):
@@ -340,7 +340,7 @@ class ProductoCard(ctk.CTkFrame):
             except Exception as e:
                 print(f"Error agregando texto a imagen fallback: {e}")
             
-            # ✅ ARREGLO: Crear CTkImage y mantener referencia del fallback
+            # ARREGLO: Crear CTkImage y mantener referencia del fallback
             ctk_fallback = ctk.CTkImage(fallback_img, size=(260, 180))
             self._imagenes_refs[fallback_key] = ctk_fallback
             
@@ -359,7 +359,7 @@ class ProductoCard(ctk.CTkFrame):
             img_frame.pack(pady=15, padx=10)
             img_frame.pack_propagate(False)
             
-            # ✅ SOLUCIÓN FINAL: Crear label placeholder primero
+            # OLUCIÓN FINAL: Crear label placeholder primero
             self.img_label_placeholder = ctk.CTkLabel(
                 img_frame, 
                 text="⏳ Cargando...", 
@@ -368,7 +368,7 @@ class ProductoCard(ctk.CTkFrame):
             )
             self.img_label_placeholder.pack(expand=True)
             
-            # ✅ Guardar referencias de widgets críticos
+            # Guardar referencias de widgets críticos
             self._img_frame = img_frame
             self._widgets_refs['img_frame'] = img_frame
             self._widgets_refs['img_label_placeholder'] = self.img_label_placeholder
@@ -382,32 +382,32 @@ class ProductoCard(ctk.CTkFrame):
             try:
                 self.crear_info_producto(info_frame)
             except Exception as info_error:
-                print(f"⚠️ Error creando info del producto: {info_error}")
+                print(f"Error creando info del producto: {info_error}")
                 # Crear información básica en caso de error
                 try:
                     error_label = ctk.CTkLabel(
                         info_frame,
-                        text=f"⚠️ Error cargando info: {self.producto.nombre}",
+                        text=f"Error cargando info: {self.producto.nombre}",
                         font=("Arial", 12),
                         text_color="#dc2626"
                     )
                     error_label.pack(pady=10)
                 except Exception as critical_error:
-                    print(f"💥 Error crítico creando info básica: {critical_error}")
-            
-            # ✅ CARGAR IMAGEN DE FORMA DIFERIDA usando after()
+                    print(f"Error crítico creando info básica: {critical_error}")
+
+            # CARGAR IMAGEN DE FORMA DIFERIDA usando after()
             # Esto evita el conflicto de pyimage en el thread principal
             self.after(100, self.cargar_imagen_diferida)
                 
         except Exception as critical_error:
-            print(f"💥 Error crítico en crear_contenido para {self.producto.nombre}: {critical_error}")
+            print(f"Error crítico en crear_contenido para {self.producto.nombre}: {critical_error}")
             import traceback
             traceback.print_exc()
             # En caso de error crítico, crear contenido mínimo
             try:
                 self.crear_contenido_emergencia()
             except Exception as emergency_error:
-                print(f"💥💥 Error de emergencia: {emergency_error}")
+                print(f"Error de emergencia: {emergency_error}")
                 raise
     
     def cargar_imagen_diferida(self):
@@ -416,7 +416,7 @@ class ProductoCard(ctk.CTkFrame):
             if self._imagen_cargada:
                 return  # Ya se cargó la imagen
             
-            print(f"🔄 Cargando imagen diferida para: {self.producto.nombre}")
+            print(f"Cargando imagen diferida para: {self.producto.nombre}")
             
             # PASO 1: Cargar imagen PIL directamente desde archivo
             img_pil = self.cargar_imagen_pil_directa()
@@ -446,17 +446,17 @@ class ProductoCard(ctk.CTkFrame):
                         # PASO 8: Marcar como cargada
                         self._imagen_cargada = True
                         
-                        print(f"✅ Imagen diferida cargada exitosamente para: {self.producto.nombre}")
+                        print(f"Imagen diferida cargada exitosamente para: {self.producto.nombre}")
                         return
                     
                 except Exception as label_error:
-                    print(f"❌ Error creando label diferido: {label_error}")
-            
+                    print(f"Error creando label diferido: {label_error}")
+
             # Si llegamos aquí, falló la carga - usar fallback
             self.cargar_fallback_diferido()
             
         except Exception as e:
-            print(f"❌ Error en carga diferida para {self.producto.nombre}: {e}")
+            print(f"Error en carga diferida para {self.producto.nombre}: {e}")
             self.cargar_fallback_diferido()
     
     def cargar_fallback_diferido(self):
@@ -465,7 +465,7 @@ class ProductoCard(ctk.CTkFrame):
             if self._imagen_cargada:
                 return
             
-            print(f"🔄 Cargando fallback diferido para: {self.producto.nombre}")
+            print(f"Cargando fallback diferido para: {self.producto.nombre}")
             
             # Crear imagen fallback agresiva
             imagen_fallback = self.crear_imagen_fallback_agresiva()
@@ -483,16 +483,16 @@ class ProductoCard(ctk.CTkFrame):
                 self.img_label.pack(expand=True)
                 self._imagen_cargada = True
                 
-                print(f"✅ Fallback diferido cargado para: {self.producto.nombre}")
+                print(f"Fallback diferido cargado para: {self.producto.nombre}")
             else:
                 # Último recurso - cambiar texto del placeholder
                 if hasattr(self, 'img_label_placeholder') and self.img_label_placeholder.winfo_exists():
                     self.img_label_placeholder.configure(text="📦\nSin Imagen")
                     self._imagen_cargada = True
-                    print(f"⚠️ Placeholder final para: {self.producto.nombre}")
+                    print(f"Placeholder final para: {self.producto.nombre}")
             
         except Exception as e:
-            print(f"❌ Error en fallback diferido: {e}")
+            print(f"Error en fallback diferido: {e}")
             # Dejar el placeholder como está
             self._imagen_cargada = True
 
@@ -538,8 +538,8 @@ class ProductoCard(ctk.CTkFrame):
                 draw.rectangle([20, 20, 240, 160], outline=(200, 200, 200), width=2)
                 
             except Exception as draw_error:
-                print(f"⚠️ Error dibujando en fallback: {draw_error}")
-            
+                print(f"Error dibujando en fallback: {draw_error}")
+
             # Crear CTkImage única (sin cache)
             ctk_fallback = ctk.CTkImage(fallback_img, size=(260, 180))
             
@@ -550,7 +550,7 @@ class ProductoCard(ctk.CTkFrame):
             return ctk_fallback
             
         except Exception as e:
-            print(f"❌ Error creando fallback agresivo: {e}")
+            print(f"Error creando fallback agresivo: {e}")
             return None
 
     def cargar_imagen_pil_directa(self):
@@ -558,7 +558,7 @@ class ProductoCard(ctk.CTkFrame):
         try:
             productos_dir = IMAGES_DIR
             if not productos_dir or not os.path.exists(productos_dir):
-                print(f"❌ Directorio no disponible: {productos_dir}")
+                print(f"Directorio no disponible: {productos_dir}")
                 return None
             
             # Buscar imagen usando múltiples estrategias
@@ -569,28 +569,28 @@ class ProductoCard(ctk.CTkFrame):
                 imagen_nombre = self.producto.imagen
             
             if not imagen_nombre:
-                print(f"⚠️ No hay nombre de imagen para: {self.producto.nombre}")
+                print(f"No hay nombre de imagen para: {self.producto.nombre}")
                 return None
             
             # Buscar archivo de imagen
             imagen_encontrada = self.buscar_imagen_multiple(productos_dir, imagen_nombre)
             if not imagen_encontrada:
-                print(f"❌ Archivo de imagen no encontrado para: {self.producto.nombre}")
+                print(f"Archivo de imagen no encontrado para: {self.producto.nombre}")
                 return None
             
             # Cargar imagen PIL directamente
-            print(f"📂 Cargando imagen directa desde: {imagen_encontrada}")
+            print(f"Cargando imagen directa desde: {imagen_encontrada}")
             img_pil = Image.open(imagen_encontrada)
             
             # Procesar imagen (redimensionar y convertir)
             img_pil = self.redimensionar_imagen(img_pil, (260, 180))
             img_pil = self.convertir_a_rgb(img_pil)
-            
-            print(f"✅ Imagen PIL cargada directamente para: {self.producto.nombre}")
+
+            print(f"Imagen PIL cargada directamente para: {self.producto.nombre}")
             return img_pil
             
         except Exception as e:
-            print(f"❌ Error cargando imagen PIL directa para {self.producto.nombre}: {e}")
+            print(f"Error cargando imagen PIL directa para {self.producto.nombre}: {e}")
             return None
 
     def crear_contenido_emergencia(self):
@@ -640,26 +640,26 @@ class ProductoCard(ctk.CTkFrame):
                     fg_color="#007bff"
                 )
                 btn_simple.pack(pady=10)
-            
-            print(f"🆘 Contenido de emergencia creado para: {self.producto.nombre}")
-            
+
+            print(f"Contenido de emergencia creado para: {self.producto.nombre}")
+
         except Exception as e:
-            print(f"💥 Error crítico en contenido de emergencia: {e}")
+            print(f"Error crítico en contenido de emergencia: {e}")
             raise
 
     def agregar_al_carrito_simple(self):
         """Versión simplificada para agregar al carrito"""
         try:
-            # ✅ ARREGLO: Usar método mejorado del carrito
+            # ARREGLO: Usar método mejorado del carrito
             exito = self.carrito.agregar_producto(self.producto, 1)
             
             if exito and self.on_agregar:
                 self.on_agregar(self.producto, 1)
                 
-            print(f"✅ Producto agregado (modo simple): {self.producto.nombre}")
+            print(f"Producto agregado (modo simple): {self.producto.nombre}")
         except Exception as e:
-            print(f"❌ Error agregando producto simple: {e}")
-    
+            print(f"Error agregando producto simple: {e}")
+
     def crear_info_producto(self, parent):
         """Crear información del producto"""
         try:
@@ -728,7 +728,7 @@ class ProductoCard(ctk.CTkFrame):
                 self.crear_boton_sin_stock(accion_frame)
                 
         except Exception as e:
-            print(f"❌ Error creando info producto: {e}")
+            print(f"Error creando info producto: {e}")
             raise
     
     def crear_controles_agregar(self, parent):
@@ -762,7 +762,7 @@ class ProductoCard(ctk.CTkFrame):
             self._widgets_refs['btn_agregar'] = btn_agregar
             
         except Exception as e:
-            print(f"❌ Error creando controles agregar: {e}")
+            print(f"Error creando controles agregar: {e}")
             raise
     
     def crear_boton_sin_stock(self, parent):
@@ -780,7 +780,7 @@ class ProductoCard(ctk.CTkFrame):
             self._widgets_refs['btn_sin_stock'] = btn_sin_stock
             
         except Exception as e:
-            print(f"❌ Error creando botón sin stock: {e}")
+            print(f"Error creando botón sin stock: {e}")
             raise
     
     def crear_contenido_basico(self):
@@ -808,13 +808,13 @@ class ProductoCard(ctk.CTkFrame):
             )
             precio_label.pack(pady=10)
             
-            print(f"⚠️ Contenido básico creado para: {self.producto.nombre}")
+            print(f"Contenido básico creado para: {self.producto.nombre}")
             
         except Exception as e:
-            print(f"❌ Error crítico creando contenido básico: {e}")
-    
+            print(f"Error crítico creando contenido básico: {e}")
+
     def agregar_al_carrito(self):
-        """✅ MÉTODO ACTUALIZADO: Agregar producto al carrito usando el sistema mejorado"""
+        """MÉTODO ACTUALIZADO: Agregar producto al carrito usando el sistema mejorado"""
         try:
             cantidad_str = self.cantidad_entry.get().strip()
             if not cantidad_str:
@@ -829,20 +829,20 @@ class ProductoCard(ctk.CTkFrame):
                 cantidad = self.producto.stock
                 self.cantidad_entry.delete(0, 'end')
                 self.cantidad_entry.insert(0, str(cantidad))
-            
-            # ✅ ARREGLO: Usar el método mejorado del carrito
+
+            # ARREGLO: Usar el método mejorado del carrito
             exito = self.carrito.agregar_producto(self.producto, cantidad)
             
             if exito:
                 # Callback opcional
                 if self.on_agregar:
                     self.on_agregar(self.producto, cantidad)
-                
-                print(f"✅ Agregado {cantidad}x {self.producto.nombre} al carrito")
-                print(f"📊 Total items en carrito: {self.carrito.obtener_cantidad_items()}")
+
+                print(f"Agregado {cantidad}x {self.producto.nombre} al carrito")
+                print(f"Total items en carrito: {self.carrito.obtener_cantidad_items()}")
             else:
-                print(f"❌ Error agregando producto al carrito")
-            
+                print(f"Error agregando producto al carrito")
+
         except ValueError:
             # Si no es un número válido, usar 1
             try:
@@ -871,7 +871,7 @@ class ProductoCard(ctk.CTkFrame):
             super().destroy()
 
 class InterfazCompras(ctk.CTkFrame):
-    # ✅ Cache global más robusto
+    # Cache global más robusto
     _cache_imagenes_global = {}
     _cache_referencias_fuertes = {}
     
@@ -880,11 +880,10 @@ class InterfazCompras(ctk.CTkFrame):
         
         self.inventario = inventario
         self.carrito = carrito
-        
-        # ✅ CALLBACK PERSONALIZADO para la aplicación principal
+        # CALLBACK PERSONALIZADO para la aplicación principal
         self._callback_producto_agregado = None
-        
-        # ✅ Cache local adicional para esta instancia
+
+        # Cache local adicional para esta instancia
         self._cache_local = {}
         self._widgets_con_imagenes = []
         self._tarjetas_productos = []
@@ -896,12 +895,12 @@ class InterfazCompras(ctk.CTkFrame):
         self.cargar_iconos_interfaz()
         
         self.crear_interfaz()
-        
-        # ✅ CARGAR PRODUCTOS DE FORMA DIFERIDA para evitar conflictos
+
+        # CARGAR PRODUCTOS DE FORMA DIFERIDA para evitar conflictos
         self.after(50, self.cargar_productos)
     
     def set_callback_producto_agregado(self, callback):
-        """✅ NUEVO: Configurar callback para cuando se agrega un producto"""
+        """NUEVO: Configurar callback para cuando se agrega un producto"""
         self._callback_producto_agregado = callback
         print(f"🔗 Callback de producto agregado configurado")
     
@@ -914,7 +913,7 @@ class InterfazCompras(ctk.CTkFrame):
                 images_dir = os.path.dirname(images_dir)  # Subir un nivel desde productos/
             
             if not images_dir or not os.path.exists(images_dir):
-                print(f"⚠️ Directorio de imágenes no encontrado: {images_dir}")
+                print(f"Directorio de imágenes no encontrado: {images_dir}")
                 self.crear_iconos_fallback()
                 return
             
@@ -940,24 +939,24 @@ class InterfazCompras(ctk.CTkFrame):
                         if img_data.mode != 'RGB':
                             img_data = img_data.convert('RGB')
                         
-                        # ✅ Mantener referencia del icono
+                        #  Mantener referencia del icono
                         icono_ctk = ctk.CTkImage(img_data, size=tamaño)
                         self.iconos[nombre_icono] = icono_ctk
                         self._cache_local[nombre_icono] = icono_ctk
                         
-                        print(f"✅ Icono cargado: {nombre_icono}")
+                        print(f"Icono cargado: {nombre_icono}")
                     else:
-                        print(f"⚠️ No se encontró icono: {archivo}")
+                        print(f"No se encontró icono: {archivo}")
                         
                 except Exception as e:
-                    print(f"❌ Error cargando icono {nombre_icono}: {e}")
+                    print(f"Error cargando icono {nombre_icono}: {e}")
             
             # Si no se cargaron iconos, crear fallbacks
             if not self.iconos:
                 self.crear_iconos_fallback()
                 
         except Exception as e:
-            print(f"❌ Error general cargando iconos: {e}")
+            print(f"Error general cargando iconos: {e}")
             self.crear_iconos_fallback()
     
     def crear_iconos_fallback(self):
@@ -977,11 +976,11 @@ class InterfazCompras(ctk.CTkFrame):
                 icono_ctk = ctk.CTkImage(img_fallback, size=(ancho, alto))
                 self.iconos[nombre] = icono_ctk
                 self._cache_local[nombre] = icono_ctk
-            
-            print("✅ Iconos fallback creados")
-            
+
+            print("Iconos fallback creados")
+
         except Exception as e:
-            print(f"❌ Error creando iconos fallback: {e}")
+            print(f"Error creando iconos fallback: {e}")
             self.iconos = {}
     
     def crear_interfaz(self):
@@ -1014,7 +1013,7 @@ class InterfazCompras(ctk.CTkFrame):
         """Cargar y mostrar productos en grid"""
         try:
             productos = self.inventario.obtener_productos()
-            print(f"📦 Cargando {len(productos)} productos...")
+            print(f"Cargando {len(productos)} productos...")
             
             if not productos:
                 self.mostrar_mensaje("No hay productos disponibles", "info")
@@ -1025,8 +1024,8 @@ class InterfazCompras(ctk.CTkFrame):
             
             # Configurar grid
             columnas = 3  # 3 productos por fila
-            
-            # ✅ CARGAR PRODUCTOS CON DELAY PROGRESIVO
+
+            # CARGAR PRODUCTOS CON DELAY PROGRESIVO
             for idx, producto in enumerate(productos):
                 # Usar after() para espaciar la creación de tarjetas
                 delay = idx * 150  # 150ms entre cada tarjeta
@@ -1035,54 +1034,54 @@ class InterfazCompras(ctk.CTkFrame):
             # Configurar columnas después de un delay
             total_delay = len(productos) * 150 + 500
             self.after(total_delay, lambda: self.configurar_grid_columnas(columnas))
-            
-            print(f"📅 Programadas {len(productos)} tarjetas con delay progresivo")
-                
+
+            print(f"Programadas {len(productos)} tarjetas con delay progresivo")
+
         except Exception as e:
-            print(f"❌ Error crítico cargando productos: {e}")
+            print(f"Error crítico cargando productos: {e}")
             import traceback
             traceback.print_exc()
             self.mostrar_error("Error crítico cargando productos")
     
     def crear_tarjeta_diferida(self, producto, idx, columnas):
-        """✅ MÉTODO ACTUALIZADO: Crear tarjeta de producto de forma diferida"""
+        """MÉTODO ACTUALIZADO: Crear tarjeta de producto de forma diferida"""
         try:
             row = idx // columnas
             col = idx % columnas
             
-            print(f"🔨 Creando tarjeta diferida para producto {idx+1}: {producto.nombre}")
-            
-            # ✅ ARREGLO: Usar callback personalizado mejorado
+            print(f"Creando tarjeta diferida para producto {idx+1}: {producto.nombre}")
+
+            # ARREGLO: Usar callback personalizado mejorado
             def on_agregar_wrapper(producto, cantidad):
                 try:
                     # Callback original de la tarjeta
                     self.on_producto_agregado(producto, cantidad)
-                    
-                    # ✅ NUEVO: Callback personalizado de la aplicación principal
+
+                    # NUEVO: Callback personalizado de la aplicación principal
                     if self._callback_producto_agregado:
                         self._callback_producto_agregado(producto, cantidad)
                         
                 except Exception as e:
-                    print(f"❌ Error en wrapper callback: {e}")
+                    print(f"Error en wrapper callback: {e}")
             
             # Crear tarjeta de producto
             card = ProductoCard(
                 self.productos_frame,
                 producto=producto,
                 carrito=self.carrito,
-                on_agregar=on_agregar_wrapper  # ✅ Usar wrapper mejorado
+                on_agregar=on_agregar_wrapper  # Usar wrapper mejorado
             )
-            
-            # ✅ Mantener referencia de la tarjeta
+
+            # Mantener referencia de la tarjeta
             self._tarjetas_productos.append(card)
             
             # Posicionar en grid
             card.grid(row=row, column=col, padx=15, pady=15, sticky="nsew")
-            
-            print(f"✅ Tarjeta diferida {idx+1} creada y posicionada")
-            
+
+            print(f"Tarjeta diferida {idx+1} creada y posicionada")
+
         except Exception as e:
-            print(f"❌ Error creando tarjeta diferida para {producto.nombre}: {e}")
+            print(f"Error creando tarjeta diferida para {producto.nombre}: {e}")
             import traceback
             traceback.print_exc()
     
@@ -1091,10 +1090,10 @@ class InterfazCompras(ctk.CTkFrame):
         try:
             for col in range(columnas):
                 self.productos_frame.grid_columnconfigure(col, weight=1)
-            print(f"✅ Grid configurado con {columnas} columnas")
+            print(f"Grid configurado con {columnas} columnas")
         except Exception as e:
-            print(f"❌ Error configurando grid: {e}")
-    
+            print(f"Error configurando grid: {e}")
+
     def limpiar_tarjetas_anteriores(self):
         """Limpiar tarjetas de productos anteriores"""
         try:
@@ -1110,12 +1109,12 @@ class InterfazCompras(ctk.CTkFrame):
             print(f"Error limpiando tarjetas anteriores: {e}")
     
     def on_producto_agregado(self, producto, cantidad):
-        """✅ MÉTODO ACTUALIZADO: Callback cuando se agrega un producto al carrito"""
+        """MÉTODO ACTUALIZADO: Callback cuando se agrega un producto al carrito"""
         try:
             # Mostrar notificación visual (opcional)
-            print(f"🛒 Producto agregado: {cantidad}x {producto.nombre}")
-            print(f"📊 Total en carrito: {self.carrito.obtener_cantidad_items()} items")
-            
+            print(f"Producto agregado: {cantidad}x {producto.nombre}")
+            print(f"Total en carrito: {self.carrito.obtener_cantidad_items()} items")
+
             # Aquí se puede notificar a la aplicación principal
             # Si hay un callback parent definido
             if hasattr(self.master, 'actualizar_contador_carrito'):
@@ -1161,7 +1160,7 @@ class InterfazCompras(ctk.CTkFrame):
             if hasattr(self, 'iconos'):
                 self.iconos.clear()
             
-            print("✅ InterfazCompras limpiada")
+            print("InterfazCompras limpiada")
             
         except Exception as e:
             print(f"Error limpiando InterfazCompras: {e}")

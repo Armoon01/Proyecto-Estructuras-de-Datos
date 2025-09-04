@@ -265,9 +265,9 @@ class AplicacionPrincipal(ctk.CTk):
             
             # INFORMACIÓN DEL USUARIO
             if self.cliente_autenticado:
-                usuario_text = f"👤 {self.cliente_autenticado.nombre}"
+                usuario_text = f"{self.cliente_autenticado.nombre}"
             else:
-                usuario_text = "👤 Usuario Invitado"
+                usuario_text = "Usuario Invitado"
             
             usuario_label = ctk.CTkLabel(
                 user_frame,
@@ -335,7 +335,7 @@ class AplicacionPrincipal(ctk.CTk):
     def limpiar_recursos(self):
         """Limpiar todos los recursos antes de cerrar"""
         try:
-            print("Limpiando recursos...")
+            print("🧹 Limpiando recursos...")
             
             # LIMPIAR INTERFACES ESPECÍFICAS DE MANERA SEGURA
             interfaces_a_limpiar = [
@@ -435,7 +435,7 @@ class AplicacionPrincipal(ctk.CTk):
             # CONFIGURAR CALLBACK EN LA INTERFAZ DE COMPRAS
             if hasattr(self.interfaz_compras, 'set_callback_producto_agregado'):
                 self.interfaz_compras.set_callback_producto_agregado(on_producto_agregado_callback)
-                print("🔗 Callback de producto agregado configurado exitosamente")
+                print("Callback de producto agregado configurado exitosamente")
             else:
                 print("La interfaz de compras no tiene método set_callback_producto_agregado")
             
@@ -527,13 +527,48 @@ class AplicacionPrincipal(ctk.CTk):
             contenido_frame = ctk.CTkFrame(historial_frame, fg_color="#ffffff")
             contenido_frame.pack(fill="both", expand=True, padx=20, pady=10)
             
-            # SIMULAR DATOS DE HISTORIAL (PLACEHOLDER)
-            self.crear_historial_simulado(contenido_frame)
-            
-            # PANEL DE ACCIONES
-            acciones_frame = ctk.CTkFrame(historial_frame, fg_color="#f8fafc", height=80)
-            acciones_frame.pack(fill="x", padx=20, pady=(10, 20))
-            acciones_frame.pack_propagate(False)
+            # CARGAR DATOS REALES DE HISTORIAL
+            try:
+                from Interfaz.InterfazHistorial import InterfazHistorial
+                nombre = getattr(self.cliente_autenticado, 'nombre', 'Invitado') if self.cliente_autenticado else 'Invitado'
+                email = getattr(self.cliente_autenticado, 'email', '') if self.cliente_autenticado else ''
+                historial_widget = InterfazHistorial(contenido_frame, self.sistema, nombre, email)
+                historial_widget.pack(fill="both", expand=True)
+                # PANEL DE ACCIONES SOLO SI NO HAY ERROR
+                acciones_frame = ctk.CTkFrame(historial_frame, fg_color="#f8fafc", height=80)
+                acciones_frame.pack(fill="x", padx=20, pady=(10, 20))
+                acciones_frame.pack_propagate(False)
+                # Botones de acción
+                btn_frame = ctk.CTkFrame(acciones_frame, fg_color="transparent")
+                btn_frame.pack(expand=True, pady=20)
+                btn_actualizar = ctk.CTkButton(
+                    btn_frame,
+                    text="Actualizar",
+                    command=self.actualizar_historial,
+                    font=("Arial", 14, "bold"),
+                    fg_color="#3b82f6",
+                    hover_color="#2563eb",
+                    width=140,
+                    height=40
+                )
+                btn_actualizar.pack(side="left", padx=10)
+                btn_exportar = ctk.CTkButton(
+                    btn_frame,
+                    text="Exportar PDF",
+                    command=self.exportar_historial,
+                    font=("Arial", 14, "bold"),
+                    fg_color="#059669",
+                    hover_color="#047857",
+                    width=140,
+                    height=40
+                )
+                btn_exportar.pack(side="left", padx=10)
+            except Exception as e:
+                print(f"Error importando o creando InterfazHistorial: {e}")
+                self.mostrar_error("Error cargando historial")
+            except Exception as e:
+                print(f"Error importando o creando InterfazHistorial: {e}")
+                self.mostrar_error("Error cargando historial")
             
             # Botones de acción
             btn_frame = ctk.CTkFrame(acciones_frame, fg_color="transparent")
@@ -565,7 +600,7 @@ class AplicacionPrincipal(ctk.CTk):
             
             btn_volver = ctk.CTkButton(
                 btn_frame,
-                text="🔙 Volver a Tienda",
+                text="Volver a Tienda",
                 command=self.mostrar_compras,
                 font=("Arial", 14, "bold"),
                 fg_color="#f59e0b",
@@ -628,7 +663,7 @@ class AplicacionPrincipal(ctk.CTk):
             
             info_label = ctk.CTkLabel(
                 info_frame,
-                text="ℹ️ Este es un historial de demostración.\nEn la versión completa, aquí aparecerían tus compras reales.",
+                text="Este es un historial de demostración.\nEn la versión completa, aquí aparecerían tus compras reales.",
                 font=("Arial", 12),
                 text_color="#0369a1",
                 justify="center"
@@ -695,7 +730,7 @@ class AplicacionPrincipal(ctk.CTk):
             # Total
             total_label = ctk.CTkLabel(
                 contenido_frame,
-                text=f"💰 Total:\n${orden['total']:.2f}",
+                text=f"Total:\n${orden['total']:.2f}",
                 font=("Arial Bold", 13),
                 text_color="#059669"
             )
@@ -773,11 +808,11 @@ class AplicacionPrincipal(ctk.CTk):
             # VERIFICAR QUE LAS ESTRUCTURAS EXISTAN
             if not hasattr(self.sistema, 'pila_ordenes') or self.sistema.pila_ordenes is None:
                 self.sistema.pila_ordenes = Pila()
-                print("🔧 Pila de órdenes inicializada")
+                print("Pila de órdenes inicializada")
             
             if not hasattr(self.sistema, 'cola_pagos') or self.sistema.cola_pagos is None:
                 self.sistema.cola_pagos = Cola()
-                print("🔧 Cola de pagos inicializada")
+                print("Cola de pagos inicializada")
             
             # CREAR VENTANA DE ESTRUCTURAS
             ventana_estructuras = mostrar_visualizador_estructuras(self.sistema)
@@ -834,12 +869,14 @@ class AplicacionPrincipal(ctk.CTk):
             self.limpiar_contenedor()
             self.actualizar_botones_navegacion("checkout")
             
-            print(f"💳 Iniciando checkout con {cantidad_items} items...")
+            print(f"Iniciando checkout con {cantidad_items} items...")
             
             self.interfaz_checkout = InterfazCheckout(
                 self.contenedor_principal, 
                 self.sistema
             )
+            # Asignar el master para navegación desde los botones
+            self.interfaz_checkout.master = self
             self.interfaz_checkout.pack(fill="both", expand=True)
             
             # CONFIGURAR CALLBACK PARA COMPLETAR CHECKOUT
@@ -871,7 +908,7 @@ class AplicacionPrincipal(ctk.CTk):
             if hasattr(self.interfaz_checkout, 'set_callback'):
                 self.interfaz_checkout.set_callback(on_checkout_complete)
                 
-            print("💳 Vista de checkout cargada exitosamente")
+            print("Vista de checkout cargada exitosamente")
             
         except Exception as e:
             print(f"Error mostrando checkout: {e}")
@@ -1020,52 +1057,30 @@ class AplicacionPrincipal(ctk.CTk):
         self.quit()
     
     def logout(self):
-        """Cerrar sesión y volver al login"""
+        """Cerrar sesión y reiniciar la aplicación en un nuevo proceso para evitar errores de Tkinter."""
         try:
             print("Iniciando proceso de logout...")
             print(f"Estado actual: vista={self.vista_actual}")
-            
             # Limpiar recursos antes de cerrar
             try:
                 self.limpiar_recursos()
             except Exception as e:
                 print(f"Warning limpiando recursos: {e}")
-            
             # Destruir la ventana actual
             print("Destruyendo ventana principal...")
             self.destroy()
-            
-            # Pequeña pausa para asegurar limpieza
-            import time
-            time.sleep(0.2)
-            print("Pausa de limpieza completada")
-            
-            # Función callback para el nuevo login
-            def reiniciar_aplicacion(cliente, sistema_login):
-                try:
-                    print(f"Reiniciando aplicación para {cliente.nombre}")
-                    configurar_dpi_awareness()
-                    
-                    # Crear nueva instancia de la aplicación
-                    print("🆕 Creando nueva instancia de aplicación...")
-                    nueva_app = AplicacionPrincipal(cliente_autenticado=cliente)
-                    print("Iniciando mainloop...")
-                    nueva_app.mainloop()
-                    
-                except Exception as e:
-                    print(f"Error reiniciando aplicación: {e}")
-                    traceback.print_exc()
-            
-            # Mostrar login con callback
-            print("Mostrando pantalla de login...")
-            mostrar_login(reiniciar_aplicacion)
-            
-            print("Proceso de logout completado")
-                
+            # Lanzar un nuevo proceso de Python para reiniciar la app
+            import sys, subprocess, os
+            python_exe = sys.executable
+            main_py = os.path.abspath(__file__)
+            print(f"Reiniciando app con: {python_exe} {main_py}")
+            subprocess.Popen([python_exe, main_py])
+            print("Proceso de logout completado. Cerrando proceso actual...")
+            sys.exit(0)
         except Exception as e:
             print(f"Error crítico en logout: {e}")
+            import traceback
             traceback.print_exc()
-            # En caso de error crítico, salir
             print("Saliendo por error crítico...")
             sys.exit(1)
     
