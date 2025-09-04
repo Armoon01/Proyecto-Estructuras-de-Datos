@@ -643,6 +643,8 @@ class InterfazCheckout(ctk.CTkFrame):
 
             # Guardar recibo e imprimirlo (puedes mostrarlo en consola o en la interfaz)
             recibo.imprimir()
+            # Guardar el recibo generado para mostrarlo en la interfaz
+            self.recibo_generado = recibo
 
             # Guardar en CSV como antes (opcional, puedes adaptar para usar recibo/pago)
             self.guardar_orden_csv({
@@ -749,19 +751,19 @@ class InterfazCheckout(ctk.CTkFrame):
         # Panel de detalles
         detalles_frame = ctk.CTkFrame(confirmacion_frame, fg_color="#ffffff", corner_radius=15)
         detalles_frame.pack(padx=60, pady=(0, 30))
-        
+
         # Título de detalles
         ctk.CTkLabel(
-            detalles_frame, 
-            text="📋 Detalles de tu Orden", 
-            font=("Arial Bold", 18), 
+            detalles_frame,
+            text="📋 Detalles de tu Orden",
+            font=("Arial Bold", 18),
             text_color="#1f2937"
         ).pack(pady=(20, 15))
-        
+
         # Información de la orden
         info_frame = ctk.CTkFrame(detalles_frame, fg_color="#f9fafb")
         info_frame.pack(fill="x", padx=20, pady=(0, 20))
-        
+
         detalles_texto = f"""
 🔖 Número de Orden: {self.orden_id}
 💰 Total Pagado: ${self.total_final:.2f}
@@ -769,14 +771,42 @@ class InterfazCheckout(ctk.CTkFrame):
 📅 Fecha: {datetime.now().strftime("%d/%m/%Y %H:%M")}
 📧 Se ha enviado un recibo por email
         """.strip()
-        
+
         ctk.CTkLabel(
-            info_frame, 
-            text=detalles_texto, 
-            font=("Arial", 14), 
+            info_frame,
+            text=detalles_texto,
+            font=("Arial", 14),
             text_color="#374151",
             justify="left"
         ).pack(pady=20)
+
+        # Mostrar recibo generado si existe
+        if hasattr(self, 'recibo_generado') and self.recibo_generado:
+            recibo = self.recibo_generado
+            detalles_recibo = f"RECIBO #{recibo.id_recibo}\nCliente: {recibo.cliente.get_nombre()} ({recibo.cliente.get_id_cliente()})\nEmail: {recibo.cliente.get_email()}\nFecha: {recibo.fecha_emision.strftime('%Y-%m-%d %H:%M:%S')}\n"
+            detalles_recibo += "Productos:\n"
+            subtotal = 0.0
+            for item in recibo.productos:
+                # Soportar tanto ItemCarrito como Producto
+                if hasattr(item, 'producto') and hasattr(item, 'cantidad'):
+                    nombre = getattr(item.producto, 'nombre', 'Desconocido')
+                    cantidad = getattr(item, 'cantidad', 1)
+                    precio = getattr(item.producto, 'precio', 0.0)
+                else:
+                    nombre = getattr(item, 'nombre', 'Desconocido')
+                    cantidad = getattr(item, 'stock', 1)
+                    precio = getattr(item, 'precio', 0.0)
+                subtotal_item = precio * cantidad
+                subtotal += subtotal_item
+                detalles_recibo += f" - {nombre} x{cantidad}: ${subtotal_item:.2f}\n"
+            detalles_recibo += f"TOTAL (sin impuestos): ${subtotal:.2f}\nEstado: {recibo.estado}"
+            ctk.CTkLabel(
+                detalles_frame,
+                text=detalles_recibo,
+                font=("Arial", 12),
+                text_color="#374151",
+                justify="left"
+            ).pack(pady=10)
         
         # Botones de acción
         botones_frame = ctk.CTkFrame(confirmacion_frame, fg_color="transparent")

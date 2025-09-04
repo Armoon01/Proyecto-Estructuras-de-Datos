@@ -1,4 +1,4 @@
-#from Src.Recibo import Recibo
+from Recibo import Recibo
 class Orden:
 
     def __init__(self, id_orden, fecha_compra, productos, recibo, fecha_entrega, fecha_envio, total):
@@ -12,8 +12,8 @@ class Orden:
         self.total = total
 
     def generar_recibo(self):
-        # Lógica para generar un recibo basado en los detalles de la orden
-        pass
+        self.recibo = Recibo(self)
+        return self.recibo
 
     def consultar_estado(self):
         return self.estado
